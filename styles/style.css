@@ -14,7 +14,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
 body {
   font-family: 'Poppins', sans-serif;
   background-color: var(--background-color);
@@ -23,7 +23,33 @@ body {
 }
 
 /* ---------------------------------- */
-/* 2. LAYOUT & TYPOGRAPHY             */
+/* 2. NAVIGATION BAR                  */
+/* ---------------------------------- */
+.navbar {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 500;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+}
+.navbar a {
+  font-weight: 600;
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+.navbar a:hover {
+  color: var(--primary-color);
+}
+
+/* ---------------------------------- */
+/* 3. LAYOUT & TYPOGRAPHY             */
 /* ---------------------------------- */
 main { max-width: 960px; margin: 40px auto; padding: 0 20px; }
 h1, h2, h3 { font-weight: 700; color: var(--primary-color); }
@@ -32,7 +58,7 @@ p { color: var(--light-text-color); font-weight: 300; }
 a { color: var(--secondary-color); text-decoration: none; font-weight: 600; }
 
 /* ---------------------------------- */
-/* 3. HEADER & SECTIONS               */
+/* 4. HEADER & SECTIONS               */
 /* ---------------------------------- */
 header {
   background: var(--surface-color);
@@ -49,11 +75,16 @@ section { padding: 40px 0; }
   padding: 30px;
   box-shadow: var(--shadow);
   margin-bottom: 25px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 #about, #education, #contact, #experience { text-align: center; }
 
 /* ---------------------------------- */
-/* 4. SKILLS                          */
+/* 5. SKILLS                          */
 /* ---------------------------------- */
 .skills-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 .skill-tag {
@@ -64,10 +95,15 @@ section { padding: 40px 0; }
   border-radius: 50px;
   font-size: 0.9rem;
   font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.skill-tag:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
 /* ---------------------------------- */
-/* 5. SLIDER SYSTEM                   */
+/* 6. SLIDER SYSTEM                   */
 /* ---------------------------------- */
 .project-slider-container, .activity-slider-container { position: relative; padding: 0 50px; }
 .project-viewport, .activity-viewport { overflow: hidden; touch-action: pan-y; }
@@ -145,7 +181,7 @@ section { padding: 40px 0; }
 .dragging a { pointer-events: none !important; }
 
 /* ---------------------------------- */
-/* 6. EXPANDABLE TEXT                 */
+/* 7. EXPANDABLE TEXT                 */
 /* ---------------------------------- */
 .expandable {
   position: relative;
@@ -171,8 +207,14 @@ section { padding: 40px 0; }
 .read-more-toggle:hover .toggle-text { text-decoration: underline; }
 
 /* ---------------------------------- */
-/* 7. OTHER COMPONENTS & UTILITIES    */
+/* 8. OTHER COMPONENTS & UTILITIES    */
 /* ---------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--secondary-color);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -218,12 +260,11 @@ section { padding: 40px 0; }
 .social-link i { font-size: 1.5rem; }
 .social-link span { font-size: 0.8rem; font-weight: 400; }
 
-
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 .fade-in { animation: fadeIn linear; animation-timeline: view(); animation-range-start: entry 10%; animation-range-end: entry 40%; }
 
 /* ---------------------------------- */
-/* 8. FOOTER & MODAL                  */
+/* 9. FOOTER & MODAL                  */
 /* ---------------------------------- */
 footer { text-align: center; padding: 25px 20px; margin-top: 40px; border-top: 1px solid var(--border-color); background-color: var(--surface-color); }
 footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
@@ -238,7 +279,7 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
 .modal-next { right: 20px; }
 
 /* ---------------------------------- */
-/* 9. RESPONSIVE MEDIA QUERIES        */
+/* 10. RESPONSIVE MEDIA QUERIES       */
 /* ---------------------------------- */
 @media (max-width: 960px) {
   .activity-card { flex-basis: calc(50% - 10px); }
@@ -246,6 +287,7 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
 
 @media (max-width: 768px) {
   header h1 { font-size: 2.5rem; }
+  .navbar { gap: 15px; justify-content: space-around; font-size: 0.9rem; }
   .project-card, .activity-card { flex-basis: 100%; }
   .project-slider-container, .activity-slider-container { padding: 0; }
   .project-slider, .activity-slider { gap: 0; }

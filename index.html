@@ -5,12 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Uditha Edirisinghe | Portfolio</title>
 
+  <meta name="description" content="The personal and professional portfolio of Uditha Edirisinghe, an Information Systems undergraduate specializing in full-stack development and system engineering." />
+  <meta property="og:title" content="Uditha Edirisinghe | Portfolio" />
+  <meta property="og:description" content="Information Systems undergraduate specializing in full-stack development." />
+  <meta property="og:image" content="https://www.your-website.com/assets/images/social-preview.png" /> <meta property="og:type" content="website" />
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <script src="scripts/main.js" defer></script>
 </head>
 <body>
+
+  <nav class="navbar">
+    <a href="#about">About</a>
+    <a href="#projects">Projects</a>
+    <a href="#experience">Experience</a>
+    <a href="#volunteering">Volunteering</a>
+    <a href="#education">Education</a>
+    <a href="#skills">Skills</a>
+    <a href="#contact">Contact</a>
+  </nav>
 
   <header>
     <div class="header-content">
@@ -30,83 +45,13 @@
       </div>
     </section>
 
-    <section id="experience" class="fade-in">
-      <h2>Professional Experience</h2>
-      <div class="card">
-        <img src="assets/images/boc.png" alt="Bank of Ceylon Logo" class="card-logo" />
-        <h3>Job Skills Development Trainee</h3>
-        <p class="meta-info">Bank of Ceylon, Peradeniya Super Grade Branch</p>
-        <p class="meta-info"><em>October 2023 – April 2024</em></p>
-        <p>
-          I completed the Job Skills Development Training Programme for School Leavers at Bank of Ceylon, working across front-desk and back-office tasks in the Personal Banking Unit. My performance was rated satisfactory and noted for honesty, punctuality, and a professional approach.
-        </p>
-      </div>
-    </section>
-
-    <section id="extracurricular" class="fade-in">
-      <h2>Extracurricular Activities</h2>
-      <div class="activity-slider-container">
-        <div class="activity-viewport">
-          <div class="activity-slider">
-            <div class="activity-card">
-              <a href="assets/images/ieeeday.png" data-gallery-item="ieee-day">
-                <img src="assets/images/ieeeday.png" alt="IEEE Day 2025" class="activity-image" />
-              </a>
-              <a href="assets/images/ieeeday.png" data-gallery-item="ieee-day" style="display:none;"></a>
-              <div class="activity-text-content">
-                <h3>IEEE Day 2025</h3>
-                <p class="org">IEEE Student Branch</p>
-                <p class="role">Logistics & HR Committee</p>
-                <p class="desc">
-                  Contributed to planning and execution, focusing on managing event logistics and coordinating human resources for a successful celebration.
-                </p>
-              </div>
-            </div>
-
-            <div class="activity-card">
-              <a href="assets/images/aa.png" data-gallery-item="algoarena">
-                <img src="assets/images/aa.png" alt="AlgoArena Event" class="activity-image" />
-              </a>
-              <a href="assets/images/aa.png" data-gallery-item="algoarena" style="display:none;"></a>
-              <div class="activity-text-content">
-                <h3>ALGOARENA’25</h3>
-                <p class="org">Leo Club of USJ & IEEE Student Branch</p>
-                <p class="role">Programming Committee</p>
-                <p class="desc">
-                  A project uniting Sri Lanka's brightest university minds to innovate and collaborate. My role involved managing the technical aspects of the competition.
-                </p>
-              </div>
-            </div>
-
-            <div class="activity-card">
-              <a href="assets/images/tx.png" data-gallery-item="techexplorer">
-                <img src="assets/images/tx.png" alt="TechExplorer Event" class="activity-image" />
-              </a>
-              <div class="activity-text-content">
-                <h3>TechXplore 2.0</h3>
-                <p class="org">Association of Computing Students (ACS)</p>
-                <p class="role">Coordinating & Finance Committee</p>
-                <p class="desc">
-                  Serving on the Organizing Committee for this flagship program, which fosters innovation and knowledge sharing.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button class="slider-btn prev-activity-btn"><i class="fas fa-chevron-left"></i></button>
-        <button class="slider-btn next-activity-btn"><i class="fas fa-chevron-right"></i></button>
-        <div class="slider-indicators activity-indicators"></div>
-        <p class="swipe-indicator"><i class="fas fa-arrows-left-right"></i> Swipe to see more</p>
-      </div>
-    </section>
-
     <section id="projects" class="fade-in">
       <h2>My Projects</h2>
       <div class="project-slider-container">
         <div class="project-viewport">
           <div class="project-slider">
             <div class="project-card">
-              <img src="assets/images/manny.png" alt="Screenshot of Manny.lk website" class="project-image" />
+              <img src="assets/images/manny.png" alt="Screenshot of Manny.lk website" class="project-image" loading="lazy" />
               <div class="project-content">
                 <h3>Co-Founder & Full-Stack Developer | Manny.lk</h3>
                 <p class="expandable" id="proj-desc-1">
@@ -119,7 +64,7 @@
             </div>
 
             <div class="project-card">
-              <img src="assets/images/portfolio.png" alt="Screenshot of portfolio website" class="project-image" />
+              <img src="assets/images/portfolio.png" alt="Screenshot of portfolio website" class="project-image" loading="lazy" />
               <div class="project-content">
                 <h3>Personal Portfolio Website</h3>
                 <p class="expandable" id="proj-desc-2">
@@ -132,7 +77,7 @@
             </div>
 
             <div class="project-card">
-              <img src="assets/images/solar.png" alt="Statistical analysis of solar power adoption" class="project-image" />
+              <img src="assets/images/solar.png" alt="Statistical analysis of solar power adoption" class="project-image" loading="lazy" />
               <div class="project-content">
                 <h3>Solar Power Adoption Analysis</h3>
                 <p class="expandable" id="proj-desc-3">
@@ -152,6 +97,99 @@
       </div>
     </section>
 
+    <section id="experience" class="fade-in">
+      <h2>Professional Experience</h2>
+      <div class="card">
+        <img src="assets/images/boc.png" alt="Bank of Ceylon Logo" class="card-logo" loading="lazy" />
+        <h3>Job Skills Development Trainee</h3>
+        <p class="meta-info">Bank of Ceylon, Peradeniya Super Grade Branch</p>
+        <p class="meta-info"><em>October 2023 – April 2024</em></p>
+        <p>
+          I completed the Job Skills Development Training Programme for School Leavers at Bank of Ceylon, working across front-desk and back-office tasks in the Personal Banking Unit. My performance was rated satisfactory and noted for honesty, punctuality, and a professional approach.
+        </p>
+      </div>
+    </section>
+
+    <section id="volunteering" class="fade-in">
+      <h2>Volunteering & Leadership</h2>
+      <div class="activity-slider-container">
+        <div class="activity-viewport">
+          <div class="activity-slider">
+            <div class="activity-card">
+              <a href="assets/images/ieeeday.png" data-gallery-item="ieee-day">
+                <img src="assets/images/ieeeday.png" alt="IEEE Day 2025" class="activity-image" loading="lazy" />
+              </a>
+              <a href="assets/images/ieeeday.png" data-gallery-item="ieee-day" style="display:none;"></a>
+              <div class="activity-text-content">
+                <h3>IEEE Day 2025</h3>
+                <p class="org">IEEE Student Branch</p>
+                <p class="role">Logistics & HR Committee</p>
+                <p class="desc">
+                  Contributed to planning and execution, focusing on managing event logistics and coordinating human resources for a successful celebration.
+                </p>
+              </div>
+            </div>
+
+            <div class="activity-card">
+              <a href="assets/images/aa.png" data-gallery-item="algoarena">
+                <img src="assets/images/aa.png" alt="AlgoArena Event" class="activity-image" loading="lazy" />
+              </a>
+              <a href="assets/images/aa.png" data-gallery-item="algoarena" style="display:none;"></a>
+              <div class="activity-text-content">
+                <h3>ALGOARENA’25</h3>
+                <p class="org">Leo Club of USJ & IEEE Student Branch</p>
+                <p class="role">Programming Committee</p>
+                <p class="desc">
+                  A project uniting Sri Lanka's brightest university minds to innovate and collaborate. My role involved managing the technical aspects of the competition.
+                </p>
+              </div>
+            </div>
+
+            <div class="activity-card">
+              <a href="assets/images/tx.png" data-gallery-item="techexplorer">
+                <img src="assets/images/tx.png" alt="TechExplorer Event" class="activity-image" loading="lazy" />
+              </a>
+              <div class="activity-text-content">
+                <h3>TechXplore 2.0</h3>
+                <p class="org">Association of Computing Students (ACS)</p>
+                <p class="role">Coordinating & Finance Committee</p>
+                <p class="desc">
+                  Serving on the Organizing Committee for this flagship program, which fosters innovation and knowledge sharing.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="slider-btn prev-activity-btn"><i class="fas fa-chevron-left"></i></button>
+        <button class="slider-btn next-activity-btn"><i class="fas fa-chevron-right"></i></button>
+        <div class="slider-indicators activity-indicators"></div>
+        <p class="swipe-indicator"><i class="fas fa-arrows-left-right"></i> Swipe to see more</p>
+      </div>
+    </section>
+    
+    <section id="education" class="fade-in">
+      <div class="card">
+        <h2>Education</h2>
+        <div class="education-entry">
+          <img src="assets/images/usj.png" alt="University of Sri Jayewardenepura Logo" class="card-logo" loading="lazy" />
+          <div class="education-details">
+            <h3>B.Comp. (Hons) in Information Systems</h3>
+            <p class="meta-info">University of Sri Jayewardenepura, Faculty of Computing</p>
+            <p class="meta-info"><em>Expected Graduation: 2028</em></p>
+          </div>
+        </div>
+        <hr />
+        <div class="education-entry">
+          <img src="assets/images/scbck.png" alt="Sri Chandananda Buddhist College Logo" class="card-logo" loading="lazy" />
+          <div class="education-details">
+            <h3>G.C.E. Advanced Level</h3>
+            <p class="meta-info">Sri Chandananda Buddhist College, Kandy</p>
+            <p class="meta-info"><em>Commerce Stream</em></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="skills" class="fade-in">
       <h2>My Skills</h2>
       <div class="skills-container">
@@ -168,32 +206,9 @@
       </div>
     </section>
 
-    <section id="education" class="fade-in">
-      <div class="card">
-        <h2>Education</h2>
-        <div class="education-entry">
-          <img src="assets/images/usj.png" alt="University of Sri Jayewardenepura Logo" class="card-logo" />
-          <div class="education-details">
-            <h3>B.Comp. (Hons) in Information Systems</h3>
-            <p class="meta-info">University of Sri Jayewardenepura, Faculty of Computing</p>
-            <p class="meta-info"><em>Expected Graduation: 2028</em></p>
-          </div>
-        </div>
-        <hr />
-        <div class="education-entry">
-          <img src="assets/images/scbck.png" alt="Sri Chandananda Buddhist College Logo" class="card-logo" />
-          <div class="education-details">
-            <h3>G.C.E. Advanced Level</h3>
-            <p class="meta-info">Sri Chandananda Buddhist College, Kandy</p>
-            <p class="meta-info"><em>Commerce Stream</em></p>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <section id="contact" class="fade-in">
       <div class="card">
-        <h2>Get In Touch</h2>
+        <h2>Contact Me</h2>
         <p>I'm always open to new opportunities and collaborations. Feel free to connect with me!</p>
         <div class="contact-buttons">
           <a href="assets/Your_Name_CV.pdf" class="btn btn-primary" download>
