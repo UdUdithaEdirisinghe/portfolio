@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ---- GENERIC SLIDER LOGIC WITH SMOOTH TOUCH DRAGGING ----
+    // ---- GENERIC SLIDER LOGIC WITH SMOOTH POINTER EVENTS ----
     function setupSlider(containerSelector, sliderSelector, prevBtnSelector, nextBtnSelector, indicatorSelector, slidesToShowConfig) {
         const sliderContainer = document.querySelector(containerSelector);
         if (!sliderContainer) return;
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let startPos = 0;
         let currentTranslate = 0;
         let prevTranslate = 0;
-        let animationID = 0;
+        let animationID;
 
         function createIndicators() {
             indicatorsContainer.innerHTML = '';
@@ -132,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setSliderPosition();
             updateIndicators();
             
-            // Update button states
             prevBtn.disabled = currentIndex === 0;
             nextBtn.disabled = (currentIndex + slidesToShow) >= slides.length;
         }
@@ -141,78 +140,64 @@ document.addEventListener('DOMContentLoaded', () => {
             slider.style.transform = `translateX(${currentTranslate}px)`;
         }
 
-        function moveNext() {
-            if ((currentIndex + slidesToShow) < slides.length) {
-                currentIndex++;
-                updateSliderPosition();
-            }
-        }
-        
-        function movePrev() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateSliderPosition();
-            }
-        }
-
-        function touchStart(index) {
-            return function(event) {
-                isDragging = true;
-                startPos = getPositionX(event);
-                slider.style.transition = 'none'; // Disable transition during drag
-                animationID = requestAnimationFrame(animation);
-            }
-        }
-
-        function touchMove(event) {
-            if (isDragging) {
-                const currentPosition = getPositionX(event);
-                currentTranslate = prevTranslate + currentPosition - startPos;
-            }
-        }
-
-        function touchEnd() {
-            isDragging = false;
-            cancelAnimationFrame(animationID);
-
-            const movedBy = currentTranslate - prevTranslate;
-
-            // Snap logic: if moved more than 25% of card width, switch slide
-            if (movedBy < -slides[0].offsetWidth / 4 && (currentIndex + slidesToShow) < slides.length) {
-                currentIndex++;
-            }
-            if (movedBy > slides[0].offsetWidth / 4 && currentIndex > 0) {
-                currentIndex--;
-            }
-
-            slider.style.transition = 'transform 0.5s ease-in-out'; // Re-enable transition
-            updateSliderPosition();
-        }
-
-        function getPositionX(event) {
-            return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
-        }
-
         function animation() {
             setSliderPosition();
             if (isDragging) requestAnimationFrame(animation);
         }
 
-        nextBtn.addEventListener('click', moveNext);
-        prevBtn.addEventListener('click', movePrev);
-        
-        // Touch events
-        slider.addEventListener('touchstart', touchStart(0), { passive: true });
-        slider.addEventListener('touchmove', touchMove, { passive: true });
-        slider.addEventListener('touchend', touchEnd);
+        function pointerDown(event) {
+            isDragging = true;
+            startPos = event.clientX;
+            slider.style.transition = 'none';
+            animationID = requestAnimationFrame(animation);
+            slider.setPointerCapture(event.pointerId);
+        }
 
-        // Mouse events (for desktop dragging)
-        slider.addEventListener('mousedown', touchStart(0));
-        slider.addEventListener('mousemove', touchMove);
-        slider.addEventListener('mouseup', touchEnd);
-        slider.addEventListener('mouseleave', () => {
-             if (isDragging) touchEnd();
+        function pointerMove(event) {
+            if (isDragging) {
+                const currentPosition = event.clientX;
+                currentTranslate = prevTranslate + currentPosition - startPos;
+            }
+        }
+
+        function pointerUp(event) {
+            if (!isDragging) return;
+            isDragging = false;
+            cancelAnimationFrame(animationID);
+
+            const movedBy = currentTranslate - prevTranslate;
+
+            // Snap logic: if moved more than 50px, switch slide
+            if (movedBy < -50 && (currentIndex + slidesToShow) < slides.length) {
+                currentIndex++;
+            }
+            if (movedBy > 50 && currentIndex > 0) {
+                currentIndex--;
+            }
+
+            slider.style.transition = 'transform 0.3s ease-out';
+            updateSliderPosition();
+            slider.releasePointerCapture(event.pointerId);
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if ((currentIndex + slidesToShow) < slides.length) {
+                currentIndex++;
+                updateSliderPosition();
+            }
         });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateSliderPosition();
+            }
+        });
+        
+        slider.addEventListener('pointerdown', pointerDown);
+        slider.addEventListener('pointermove', pointerMove);
+        slider.addEventListener('pointerup', pointerUp);
+        slider.addEventListener('pointerleave', (e) => { if(isDragging) pointerUp(e) }); // End drag if cursor leaves
 
         window.addEventListener('resize', () => {
             updateSlidesToShow();
@@ -221,9 +206,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             createIndicators();
             setTimeout(() => {
-                slider.style.transition = 'none'; // Disable transition for resize adjustment
+                slider.style.transition = 'none';
                 updateSliderPosition();
-                slider.style.transition = 'transform 0.5s ease-in-out'; // Re-enable after a moment
+                slider.style.transition = 'transform 0.3s ease-out';
             }, 100);
         });
 
