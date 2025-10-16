@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* ---------------- SLIDER (viewport-bound, iOS-safe) ---------------- */
+    /* ---------------- SLIDER (vertical-scroll friendly) ---------------- */
     function setupSlider(containerSelector, sliderSelector, prevBtnSelector, nextBtnSelector, indicatorSelector, slidesToShowConfig) {
         const sliderContainer = document.querySelector(containerSelector);
         if (!sliderContainer) return;
@@ -67,16 +67,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!slider || !viewport || !prevBtn || !nextBtn || !indicatorsContainer || slides.length === 0) return;
 
-        // iOS Safari: ensure the viewport owns the gesture
-        viewport.style.touchAction = 'none';
+        // Allow vertical panning by default; we’ll only hijack on confirmed horizontal drags
+        viewport.style.touchAction = 'pan-y';
 
         let currentIndex = 0;
         let slidesToShow = slidesToShowConfig.desktop.slides;
         const gap = parseInt(getComputedStyle(slider).getPropertyValue('gap')) || 0;
 
-        let isDragging = false;
+        // Gesture state
+        let isPointerDown = false;   // finger/mouse is down
+        let isDragging = false;      // we have decided it’s a horizontal drag
         let hasMoved = false;
         let startX = 0;
+        let startY = 0;
         let currentTranslate = 0;
         let prevTranslate = 0;
         let animationID = 0;
@@ -122,38 +125,72 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isDragging) animationID = requestAnimationFrame(raf);
         }
 
-        const getX = (e) => (e.touches?.[0]?.clientX ?? e.changedTouches?.[0]?.clientX ?? e.clientX);
+        const getPoint = (e) => {
+            const t = e.touches?.[0] || e.changedTouches?.[0];
+            return {
+                x: (t ? t.clientX : e.clientX),
+                y: (t ? t.clientY : e.clientY)
+            };
+        };
 
-        function begin(x) {
-            isDragging = true;
+        const H_THRESHOLD = 6; // px before we consider it a horizontal intent
+
+        function pointerDown(e) {
+            const p = getPoint(e);
+            isPointerDown = true;
+            isDragging = false;   // not decided yet
             hasMoved = false;
-            startX = x;
-            sliderContainer.classList.add('dragging'); // block link clicks while dragging
-            slider.style.transition = 'none';
-            animationID = requestAnimationFrame(raf);
+            startX = p.x;
+            startY = p.y;
+            // Do NOT change transitions or add dragging class yet—wait for horizontal intent
         }
 
-        function move(x) {
-            if (!isDragging) return;
-            const delta = x - startX;
-            if (Math.abs(delta) > 5) hasMoved = true;
-            currentTranslate = prevTranslate + delta;
+        function pointerMove(e) {
+            if (!isPointerDown) return;
+            const p = getPoint(e);
+            const dx = p.x - startX;
+            const dy = p.y - startY;
+
+            // If not yet dragging, decide the intent
+            if (!isDragging) {
+                if (Math.abs(dx) > H_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+                    // Horizontal drag confirmed — now we take over
+                    isDragging = true;
+                    sliderContainer.classList.add('dragging'); // suppress clicks
+                    slider.style.transition = 'none';
+                    animationID = requestAnimationFrame(raf);
+                } else {
+                    // Not a horizontal gesture => let the browser handle vertical scroll
+                    return; // Do not preventDefault
+                }
+            }
+
+            // We are dragging horizontally
+            hasMoved = true;
+            currentTranslate = prevTranslate + dx;
+
+            // Prevent the page from scrolling while we drag horizontally
+            if (e.cancelable) e.preventDefault();
         }
 
-        function end() {
-            if (!isDragging) return;
-            const movedBy = currentTranslate - prevTranslate;
-            const step = stepWidth();
-            const threshold = Math.min(50, step / 5);
-
-            if (movedBy < -threshold && (currentIndex + slidesToShow) < slides.length) currentIndex++;
-            else if (movedBy > threshold && currentIndex > 0) currentIndex--;
-
-            slider.style.transition = 'transform 0.3s ease-out';
-            updateSliderPosition();
-
+        function endDrag() {
+            // Called when pointer/mouse/touch ends or is canceled
             if (animationID) cancelAnimationFrame(animationID);
             animationID = 0;
+
+            if (isDragging) {
+                const movedBy = currentTranslate - prevTranslate;
+                const step = stepWidth();
+                const threshold = Math.min(50, step / 5);
+
+                if (movedBy < -threshold && (currentIndex + slidesToShow) < slides.length) currentIndex++;
+                else if (movedBy > threshold && currentIndex > 0) currentIndex--;
+
+                slider.style.transition = 'transform 0.3s ease-out';
+                updateSliderPosition();
+            }
+
+            isPointerDown = false;
             isDragging = false;
             sliderContainer.classList.remove('dragging');
         }
@@ -168,37 +205,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Suppress post-drag clicks from anchors/images
         viewport.addEventListener('click', (e) => {
-            if (hasMoved) { e.preventDefault(); e.stopPropagation(); }
+            if (hasMoved) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
         }, true);
 
-        // Bind to the STATIC viewport
+        // Event binding (pointer if available; else touch/mouse)
         if (supportsPointer) {
-            viewport.addEventListener('pointerdown', (e) => begin(getX(e)));
-            viewport.addEventListener('pointermove', (e) => move(getX(e)));
-            viewport.addEventListener('pointerup',   end);
-            viewport.addEventListener('pointerleave', () => { if (isDragging) end(); });
-            viewport.addEventListener('pointercancel', () => {
-                slider.style.transition = 'transform 0.3s ease-out';
-                slider.style.transform = `translateX(${prevTranslate}px)`;
-                if (animationID) cancelAnimationFrame(animationID);
-                animationID = 0; isDragging = false; sliderContainer.classList.remove('dragging');
-            });
+            viewport.addEventListener('pointerdown', pointerDown, { passive: true });
+            viewport.addEventListener('pointermove',  pointerMove, { passive: false }); // may preventDefault on horizontal drag
+            viewport.addEventListener('pointerup',    endDrag,     { passive: true });
+            viewport.addEventListener('pointerleave', () => { if (isPointerDown) endDrag(); }, { passive: true });
+            viewport.addEventListener('pointercancel', endDrag, { passive: true });
         } else {
-            // iOS-safe touch fallback
-            viewport.addEventListener('touchstart', (e) => begin(getX(e)), { passive: true });
-            viewport.addEventListener('touchmove',  (e) => { if (isDragging) e.preventDefault(); move(getX(e)); }, { passive: false });
-            viewport.addEventListener('touchend',   end, { passive: true });
-            viewport.addEventListener('touchcancel', () => {
-                slider.style.transition = 'transform 0.3s ease-out';
-                slider.style.transform = `translateX(${prevTranslate}px)`;
-                if (animationID) cancelAnimationFrame(animationID);
-                animationID = 0; isDragging = false; sliderContainer.classList.remove('dragging');
-            });
-
-            // Desktop mouse fallback
-            viewport.addEventListener('mousedown', (e) => begin(getX(e)));
-            window.addEventListener('mousemove', (e) => move(getX(e)));
-            window.addEventListener('mouseup',   end);
+            // Touch fallback
+            viewport.addEventListener('touchstart', (e) => pointerDown(e), { passive: true });
+            viewport.addEventListener('touchmove',  (e) => pointerMove(e), { passive: false });
+            viewport.addEventListener('touchend',   () => endDrag(), { passive: true });
+            viewport.addEventListener('touchcancel', () => endDrag(), { passive: true });
+            // Mouse fallback
+            viewport.addEventListener('mousedown', (e) => pointerDown(e));
+            window.addEventListener('mousemove', (e) => pointerMove(e));
+            window.addEventListener('mouseup',   () => endDrag());
         }
 
         window.addEventListener('resize', () => {

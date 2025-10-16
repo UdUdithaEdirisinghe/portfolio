@@ -95,8 +95,8 @@ section { padding: 40px 0; }
 .project-viewport,
 .activity-viewport {
     overflow: hidden;
-    /* iOS/Safari: viewport owns the gesture for reliable swipes */
-    touch-action: none;
+    /* Let the browser handle vertical scroll unless we confirm horizontal drag */
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -105,7 +105,6 @@ section { padding: 40px 0; }
     display: flex;
     gap: 20px;
     transition: transform 0.3s ease-out;
-    /* gesture handled by the viewport; avoid competing touch-action here */
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
