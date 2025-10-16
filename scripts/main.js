@@ -60,113 +60,106 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ---- HORIZONTAL PROJECT SLIDER LOGIC ----
-    const projectSlider = document.querySelector('.project-slider');
-    if (projectSlider) {
-        // (This code remains unchanged)
-        const prevBtn = document.querySelector('.prev-project-btn');
-        const nextBtn = document.querySelector('.next-project-btn');
-        const slides = Array.from(projectSlider.children);
+    // ---- HORIZONTAL SLIDER LOGIC (Abstracted for reuse) ----
+    function setupSlider(sliderElement, prevBtn, nextBtn, desktopSlidesToShow, tabletSlidesToShow = null) {
+        const slides = Array.from(sliderElement.children);
         let currentIndex = 0;
-        let slidesToShow = 2;
-        const style = getComputedStyle(projectSlider);
+        let slidesToShow = desktopSlidesToShow;
+
+        const style = getComputedStyle(sliderElement);
         const gap = parseInt(style.getPropertyValue('gap'));
 
-        function updateProjectSlidesToShow() {
-            if (window.innerWidth <= 768) {
-                slidesToShow = 1;
+        function updateSlidesToShow() {
+            if (tabletSlidesToShow && window.innerWidth <= 960 && window.innerWidth > 768) {
+                slidesToShow = tabletSlidesToShow; // For tablets
+            } else if (window.innerWidth <= 768) {
+                slidesToShow = 1; // Always 1 for mobile
             } else {
-                slidesToShow = 2;
+                slidesToShow = desktopSlidesToShow; // Default for desktop
             }
         }
 
-        function updateProjectSliderPosition() {
+        function updateSliderPosition() {
             const cardWidth = slides[0].offsetWidth; 
             const totalStepWidth = cardWidth + gap;
-            projectSlider.style.transform = `translateX(-${currentIndex * totalStepWidth}px)`;
+            sliderElement.style.transform = `translateX(-${currentIndex * totalStepWidth}px)`;
             prevBtn.disabled = currentIndex === 0;
             nextBtn.disabled = (currentIndex + slidesToShow) >= slides.length;
         }
 
-        nextBtn.addEventListener('click', () => {
+        // Navigation functions
+        function showNext() {
             if ((currentIndex + slidesToShow) < slides.length) {
                 currentIndex++;
-                updateProjectSliderPosition();
+                updateSliderPosition();
             }
-        });
+        }
 
-        prevBtn.addEventListener('click', () => {
+        function showPrev() {
             if (currentIndex > 0) {
                 currentIndex--;
-                updateProjectSliderPosition();
+                updateSliderPosition();
             }
-        });
+        }
+
+        nextBtn.addEventListener('click', showNext);
+        prevBtn.addEventListener('click', showPrev);
 
         window.addEventListener('resize', () => {
-            updateProjectSlidesToShow();
+            updateSlidesToShow();
+            // Adjust current index if resizing makes it out of bounds
             if ((currentIndex + slidesToShow) > slides.length) {
                 currentIndex = Math.max(0, slides.length - slidesToShow);
             }
-            updateProjectSliderPosition();
+            updateSliderPosition();
         });
 
-        updateProjectSlidesToShow();
-        updateProjectSliderPosition();
+        // ---- Touch/Swipe Logic ----
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const minSwipeDistance = 50; // Minimum pixels for a swipe to register
+
+        sliderElement.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        sliderElement.addEventListener('touchmove', (e) => {
+            touchEndX = e.touches[0].clientX;
+        });
+
+        sliderElement.addEventListener('touchend', () => {
+            const swipeDistance = touchStartX - touchEndX;
+
+            if (swipeDistance > minSwipeDistance) {
+                // Swiped left (want to go to next slide)
+                showNext();
+            } else if (swipeDistance < -minSwipeDistance) {
+                // Swiped right (want to go to previous slide)
+                showPrev();
+            }
+            // Reset touch coordinates
+            touchStartX = 0;
+            touchEndX = 0;
+        });
+
+        // Initial setup
+        updateSlidesToShow();
+        updateSliderPosition();
     }
 
-    // ---- NEW: HORIZONTAL ACTIVITY SLIDER LOGIC ----
+    // Initialize Project Slider
+    const projectSlider = document.querySelector('.project-slider');
+    const prevProjectBtn = document.querySelector('.prev-project-btn');
+    const nextProjectBtn = document.querySelector('.next-project-btn');
+    if (projectSlider && prevProjectBtn && nextProjectBtn) {
+        setupSlider(projectSlider, prevProjectBtn, nextProjectBtn, 2); // 2 cards on desktop
+    }
+
+    // Initialize Activity Slider
     const activitySlider = document.querySelector('.activity-slider');
-    if (activitySlider) {
-        const prevBtn = document.querySelector('.prev-activity-btn');
-        const nextBtn = document.querySelector('.next-activity-btn');
-        const slides = Array.from(activitySlider.children);
-        let currentIndex = 0;
-        let slidesToShow = 3; // Default to 3 for desktop
-
-        const style = getComputedStyle(activitySlider);
-        const gap = parseInt(style.getPropertyValue('gap'));
-
-        function updateActivitySlidesToShow() {
-            if (window.innerWidth <= 768) {
-                slidesToShow = 1; // 1 on mobile
-            } else if (window.innerWidth <= 960) {
-                slidesToShow = 2; // 2 on tablet
-            } else {
-                slidesToShow = 3; // 3 on desktop
-            }
-        }
-
-        function updateActivitySliderPosition() {
-            const cardWidth = slides[0].offsetWidth;
-            const totalStepWidth = cardWidth + gap;
-            activitySlider.style.transform = `translateX(-${currentIndex * totalStepWidth}px)`;
-            prevBtn.disabled = currentIndex === 0;
-            nextBtn.disabled = (currentIndex + slidesToShow) >= slides.length;
-        }
-
-        nextBtn.addEventListener('click', () => {
-            if ((currentIndex + slidesToShow) < slides.length) {
-                currentIndex++;
-                updateActivitySliderPosition();
-            }
-        });
-
-        prevBtn.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateActivitySliderPosition();
-            }
-        });
-
-        window.addEventListener('resize', () => {
-            updateActivitySlidesToShow();
-            if ((currentIndex + slidesToShow) > slides.length) {
-                currentIndex = Math.max(0, slides.length - slidesToShow);
-            }
-            updateActivitySliderPosition();
-        });
-
-        updateActivitySlidesToShow();
-        updateActivitySliderPosition();
+    const prevActivityBtn = document.querySelector('.prev-activity-btn');
+    const nextActivityBtn = document.querySelector('.next-activity-btn');
+    if (activitySlider && prevActivityBtn && nextActivityBtn) {
+        setupSlider(activitySlider, prevActivityBtn, nextActivityBtn, 3, 2); // 3 cards on desktop, 2 on tablet
     }
 });
