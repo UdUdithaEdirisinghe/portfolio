@@ -130,8 +130,8 @@ section {
     display: flex;
     gap: 20px;
     transition: transform 0.5s ease-in-out;
-    touch-action: pan-y; /* Prevent vertical scroll during horizontal swipe */
-    -webkit-user-select: none; /* Prevent text selection during swipe */
+    touch-action: pan-y;
+    -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
 }
@@ -398,11 +398,16 @@ section {
     }
 
     .project-slider-container, .activity-slider-container {
-        padding: 0 40px;
+        padding: 0;
     }
 
-    .prev-project-btn, .prev-activity-btn { left: 0; }
-    .next-project-btn, .next-activity-btn { right: 0; }
+    .prev-project-btn, .prev-activity-btn {
+        left: 10px;
+    }
+    
+    .next-project-btn, .next-activity-btn {
+        right: 10px;
+    }
 }
 
 
