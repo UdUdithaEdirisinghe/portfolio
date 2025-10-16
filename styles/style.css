@@ -383,6 +383,20 @@ section {
     background-color: var(--primary-color);
 }
 
+/* SWIPE INDICATOR STYLES */
+.swipe-indicator {
+    display: none; /* Hidden by default on desktop */
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: var(--light-text-color);
+}
+
+.swipe-indicator i {
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
 /* ---------------------------------- */
 /* 5. RESPONSIVE DESIGN               */
 /* ---------------------------------- */
@@ -401,12 +415,14 @@ section {
         padding: 0;
     }
 
-    .prev-project-btn, .prev-activity-btn {
-        left: 10px;
+    /* Hide arrows on mobile */
+    .slider-btn {
+        display: none;
     }
-    
-    .next-project-btn, .next-activity-btn {
-        right: 10px;
+
+    /* Show swipe message on mobile */
+    .swipe-indicator {
+        display: block;
     }
 }
 
