@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const galleryTriggers = document.querySelectorAll('a[data-gallery-item]');
 
         galleryTriggers.forEach(trigger => {
-            // Ensure we only attach listeners to visible items (not the hidden duplicates for the gallery)
             if (trigger.style.display !== 'none') {
                 trigger.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -26,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
             galleryItems = Array.from(document.querySelectorAll(`a[data-gallery-item="${galleryName}"]`));
             const clickedItemSrc = trigger.getAttribute('href');
             currentIndex = galleryItems.findIndex(item => item.getAttribute('href') === clickedItemSrc);
-            
             updateModalImage();
             modal.classList.add('visible');
         }
@@ -69,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ---- GENERIC SLIDER LOGIC WITH TOUCH SUPPORT & INDICATORS ----
+    // ---- GENERIC SLIDER LOGIC WITH SMOOTH TOUCH DRAGGING ----
     function setupSlider(containerSelector, sliderSelector, prevBtnSelector, nextBtnSelector, indicatorSelector, slidesToShowConfig) {
         const sliderContainer = document.querySelector(containerSelector);
         if (!sliderContainer) return;
@@ -86,14 +84,16 @@ document.addEventListener('DOMContentLoaded', () => {
         let slidesToShow = slidesToShowConfig.desktop.slides;
         const gap = parseInt(getComputedStyle(slider).getPropertyValue('gap')) || 0;
 
-        // Touch event variables
-        let touchStartX = 0;
-        let touchEndX = 0;
+        let isDragging = false;
+        let startPos = 0;
+        let currentTranslate = 0;
+        let prevTranslate = 0;
+        let animationID = 0;
 
         function createIndicators() {
             indicatorsContainer.innerHTML = '';
             const numIndicators = slides.length - slidesToShow + 1;
-            if (numIndicators <= 1) return; // Don't show indicators if not needed
+            if (numIndicators <= 1) return;
 
             for (let i = 0; i < numIndicators; i++) {
                 const dot = document.createElement('div');
@@ -109,7 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
         function updateIndicators() {
             const dots = indicatorsContainer.querySelectorAll('.indicator-dot');
             if (dots.length === 0) return;
-            
             dots.forEach((dot, index) => {
                 dot.classList.toggle('active', index === currentIndex);
             });
@@ -128,14 +127,20 @@ document.addEventListener('DOMContentLoaded', () => {
         function updateSliderPosition() {
             const cardWidth = slides[0].offsetWidth;
             const totalStepWidth = cardWidth + gap;
-            slider.style.transform = `translateX(-${currentIndex * totalStepWidth}px)`;
-
+            currentTranslate = currentIndex * -totalStepWidth;
+            prevTranslate = currentTranslate;
+            setSliderPosition();
+            updateIndicators();
+            
+            // Update button states
             prevBtn.disabled = currentIndex === 0;
             nextBtn.disabled = (currentIndex + slidesToShow) >= slides.length;
-            
-            updateIndicators();
         }
-        
+
+        function setSliderPosition() {
+            slider.style.transform = `translateX(${currentTranslate}px)`;
+        }
+
         function moveNext() {
             if ((currentIndex + slidesToShow) < slides.length) {
                 currentIndex++;
@@ -150,42 +155,76 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        function handleTouchStart(e) {
-            touchStartX = e.touches[0].clientX;
-        }
-        
-        function handleTouchMove(e) {
-            touchEndX = e.touches[0].clientX;
+        function touchStart(index) {
+            return function(event) {
+                isDragging = true;
+                startPos = getPositionX(event);
+                slider.style.transition = 'none'; // Disable transition during drag
+                animationID = requestAnimationFrame(animation);
+            }
         }
 
-        function handleTouchEnd() {
-            const swipeThreshold = 75; 
-            if (touchStartX - touchEndX > swipeThreshold) {
-                moveNext();
-            } else if (touchEndX - touchStartX > swipeThreshold) {
-                movePrev();
+        function touchMove(event) {
+            if (isDragging) {
+                const currentPosition = getPositionX(event);
+                currentTranslate = prevTranslate + currentPosition - startPos;
             }
-            touchStartX = 0;
-            touchEndX = 0;
+        }
+
+        function touchEnd() {
+            isDragging = false;
+            cancelAnimationFrame(animationID);
+
+            const movedBy = currentTranslate - prevTranslate;
+
+            // Snap logic: if moved more than 25% of card width, switch slide
+            if (movedBy < -slides[0].offsetWidth / 4 && (currentIndex + slidesToShow) < slides.length) {
+                currentIndex++;
+            }
+            if (movedBy > slides[0].offsetWidth / 4 && currentIndex > 0) {
+                currentIndex--;
+            }
+
+            slider.style.transition = 'transform 0.5s ease-in-out'; // Re-enable transition
+            updateSliderPosition();
+        }
+
+        function getPositionX(event) {
+            return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+        }
+
+        function animation() {
+            setSliderPosition();
+            if (isDragging) requestAnimationFrame(animation);
         }
 
         nextBtn.addEventListener('click', moveNext);
         prevBtn.addEventListener('click', movePrev);
         
-        slider.addEventListener('touchstart', handleTouchStart, { passive: true });
-        slider.addEventListener('touchmove', handleTouchMove, { passive: true });
-        slider.addEventListener('touchend', handleTouchEnd);
+        // Touch events
+        slider.addEventListener('touchstart', touchStart(0), { passive: true });
+        slider.addEventListener('touchmove', touchMove, { passive: true });
+        slider.addEventListener('touchend', touchEnd);
+
+        // Mouse events (for desktop dragging)
+        slider.addEventListener('mousedown', touchStart(0));
+        slider.addEventListener('mousemove', touchMove);
+        slider.addEventListener('mouseup', touchEnd);
+        slider.addEventListener('mouseleave', () => {
+             if (isDragging) touchEnd();
+        });
 
         window.addEventListener('resize', () => {
             updateSlidesToShow();
-            
             if ((currentIndex + slidesToShow) > slides.length) {
                 currentIndex = Math.max(0, slides.length - slidesToShow);
             }
-
             createIndicators();
-            
-            setTimeout(updateSliderPosition, 100);
+            setTimeout(() => {
+                slider.style.transition = 'none'; // Disable transition for resize adjustment
+                updateSliderPosition();
+                slider.style.transition = 'transform 0.5s ease-in-out'; // Re-enable after a moment
+            }, 100);
         });
 
         // Initial Setup
