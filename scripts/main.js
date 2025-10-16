@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // ---- MODAL GALLERY LOGIC ----
+    // ---- MODAL GALLERY LOGIC (Unchanged) ----
     const modal = document.getElementById('image-modal');
     if (modal) {
-        // (This code remains unchanged)
         const modalImage = document.getElementById('modal-image');
         const closeModal = document.querySelector('.modal-close');
         const prevButton = document.querySelector('.modal-prev');
@@ -46,9 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         closeModal.addEventListener('click', () => modal.classList.remove('visible'));
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) modal.classList.remove('visible');
-        });
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('visible'); });
         nextButton.addEventListener('click', showNextImage);
         prevButton.addEventListener('click', showPrevImage);
         document.addEventListener('keydown', (e) => {
@@ -60,106 +57,133 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ---- HORIZONTAL SLIDER LOGIC (Abstracted for reuse) ----
-    function setupSlider(sliderElement, prevBtn, nextBtn, desktopSlidesToShow, tabletSlidesToShow = null) {
-        const slides = Array.from(sliderElement.children);
-        let currentIndex = 0;
-        let slidesToShow = desktopSlidesToShow;
+    // ---- ADVANCED HORIZONTAL SLIDER LOGIC ----
+    function setupAdvancedSlider(containerSelector, sliderSelector, prevBtnSelector, nextBtnSelector, desktopSlides, tabletSlides) {
+        const sliderContainer = document.querySelector(containerSelector);
+        if (!sliderContainer) return;
 
-        const style = getComputedStyle(sliderElement);
+        const slider = sliderContainer.querySelector(sliderSelector);
+        const prevBtn = sliderContainer.querySelector(prevBtnSelector);
+        const nextBtn = sliderContainer.querySelector(nextBtnSelector);
+        const slides = Array.from(slider.children);
+
+        let currentIndex = 0;
+        let slidesToShow = desktopSlides;
+        let isDragging = false, startPos = 0, currentTranslate = 0, prevTranslate = 0, animationID;
+
+        const style = getComputedStyle(slider);
         const gap = parseInt(style.getPropertyValue('gap'));
 
         function updateSlidesToShow() {
-            if (tabletSlidesToShow && window.innerWidth <= 960 && window.innerWidth > 768) {
-                slidesToShow = tabletSlidesToShow; // For tablets
-            } else if (window.innerWidth <= 768) {
-                slidesToShow = 1; // Always 1 for mobile
-            } else {
-                slidesToShow = desktopSlidesToShow; // Default for desktop
-            }
+            if (window.innerWidth <= 768) slidesToShow = 1;
+            else if (window.innerWidth <= 960) slidesToShow = tabletSlides || desktopSlides;
+            else slidesToShow = desktopSlides;
+        }
+
+        function getStepWidth() {
+            if (slides.length === 0) return 0;
+            return slides[0].offsetWidth + gap;
         }
 
         function updateSliderPosition() {
-            const cardWidth = slides[0].offsetWidth; 
-            const totalStepWidth = cardWidth + gap;
-            sliderElement.style.transform = `translateX(-${currentIndex * totalStepWidth}px)`;
+            currentTranslate = currentIndex * -getStepWidth();
+            prevTranslate = currentTranslate;
+            setSliderPosition();
+            updateArrowStates();
+        }
+
+        function setSliderPosition() {
+            slider.style.transform = `translateX(${currentTranslate}px)`;
+        }
+
+        function updateArrowStates() {
             prevBtn.disabled = currentIndex === 0;
             nextBtn.disabled = (currentIndex + slidesToShow) >= slides.length;
         }
+        
+        function animation() {
+            setSliderPosition();
+            if(isDragging) requestAnimationFrame(animation);
+        }
 
-        // Navigation functions
-        function showNext() {
+        function touchStart(index) {
+            return function(event) {
+                isDragging = true;
+                startPos = getPositionX(event);
+                animationID = requestAnimationFrame(animation);
+                slider.style.transition = 'none'; // Disable transition while dragging
+            }
+        }
+
+        function touchMove(event) {
+            if (isDragging) {
+                const currentPosition = getPositionX(event);
+                currentTranslate = prevTranslate + currentPosition - startPos;
+            }
+        }
+
+        function touchEnd() {
+            isDragging = false;
+            cancelAnimationFrame(animationID);
+            
+            const movedBy = currentTranslate - prevTranslate;
+            
+            // Snap logic: if moved more than 30% of a card's width, or a quick flick
+            if (movedBy < -50 && currentIndex < slides.length - slidesToShow) currentIndex += 1;
+            if (movedBy > 50 && currentIndex > 0) currentIndex -= 1;
+            
+            slider.style.transition = 'transform 0.5s ease-in-out'; // Re-enable for snap animation
+            updateSliderPosition();
+        }
+
+        function getPositionX(event) {
+            return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+        }
+
+        // Arrow button listeners
+        nextBtn.addEventListener('click', () => {
             if ((currentIndex + slidesToShow) < slides.length) {
                 currentIndex++;
                 updateSliderPosition();
             }
-        }
+        });
 
-        function showPrev() {
+        prevBtn.addEventListener('click', () => {
             if (currentIndex > 0) {
                 currentIndex--;
                 updateSliderPosition();
             }
-        }
+        });
 
-        nextBtn.addEventListener('click', showNext);
-        prevBtn.addEventListener('click', showPrev);
+        // Add touch and mouse event listeners for swiping
+        slides.forEach((slide, index) => {
+            slide.addEventListener('dragstart', (e) => e.preventDefault());
+            // Touch events
+            slide.addEventListener('touchstart', touchStart(index));
+            slide.addEventListener('touchend', touchEnd);
+            slide.addEventListener('touchmove', touchMove);
+            // Mouse events (for desktop dragging)
+            slide.addEventListener('mousedown', touchStart(index));
+            slide.addEventListener('mouseup', touchEnd);
+            slide.addEventListener('mouseleave', () => { if(isDragging) touchEnd() });
+            slide.addEventListener('mousemove', touchMove);
+        });
 
+        // Window resize listener
         window.addEventListener('resize', () => {
             updateSlidesToShow();
-            // Adjust current index if resizing makes it out of bounds
             if ((currentIndex + slidesToShow) > slides.length) {
                 currentIndex = Math.max(0, slides.length - slidesToShow);
             }
             updateSliderPosition();
         });
 
-        // ---- Touch/Swipe Logic ----
-        let touchStartX = 0;
-        let touchEndX = 0;
-        const minSwipeDistance = 50; // Minimum pixels for a swipe to register
-
-        sliderElement.addEventListener('touchstart', (e) => {
-            touchStartX = e.touches[0].clientX;
-        });
-
-        sliderElement.addEventListener('touchmove', (e) => {
-            touchEndX = e.touches[0].clientX;
-        });
-
-        sliderElement.addEventListener('touchend', () => {
-            const swipeDistance = touchStartX - touchEndX;
-
-            if (swipeDistance > minSwipeDistance) {
-                // Swiped left (want to go to next slide)
-                showNext();
-            } else if (swipeDistance < -minSwipeDistance) {
-                // Swiped right (want to go to previous slide)
-                showPrev();
-            }
-            // Reset touch coordinates
-            touchStartX = 0;
-            touchEndX = 0;
-        });
-
         // Initial setup
         updateSlidesToShow();
         updateSliderPosition();
     }
-
-    // Initialize Project Slider
-    const projectSlider = document.querySelector('.project-slider');
-    const prevProjectBtn = document.querySelector('.prev-project-btn');
-    const nextProjectBtn = document.querySelector('.next-project-btn');
-    if (projectSlider && prevProjectBtn && nextProjectBtn) {
-        setupSlider(projectSlider, prevProjectBtn, nextProjectBtn, 2); // 2 cards on desktop
-    }
-
-    // Initialize Activity Slider
-    const activitySlider = document.querySelector('.activity-slider');
-    const prevActivityBtn = document.querySelector('.prev-activity-btn');
-    const nextActivityBtn = document.querySelector('.next-activity-btn');
-    if (activitySlider && prevActivityBtn && nextActivityBtn) {
-        setupSlider(activitySlider, prevActivityBtn, nextActivityBtn, 3, 2); // 3 cards on desktop, 2 on tablet
-    }
+    
+    // Initialize sliders
+    setupAdvancedSlider('.project-slider-container', '.project-slider', '.prev-project-btn', '.next-project-btn', 2);
+    setupAdvancedSlider('.activity-slider-container', '.activity-slider', '.prev-activity-btn', '.next-activity-btn', 3, 2);
 });
