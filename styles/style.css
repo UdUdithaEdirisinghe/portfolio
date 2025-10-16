@@ -26,9 +26,7 @@ body {
 /* 2. NAVIGATION BAR                  */
 /* ---------------------------------- */
 .navbar {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--surface-color); /* Changed to solid color */
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
@@ -296,9 +294,9 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
   h2 { font-size: 1.8rem; }
   .card { padding: 24px; }
   .project-content, .activity-text-content { padding: 20px; }
-
+  
   /* Mobile Navigation */
-  .navbar { justify-content: flex-end; }
+  .navbar { justify-content: flex-end; padding-right: 24px; }
   .nav-toggle {
     display: block;
     background: transparent;
@@ -311,7 +309,7 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
   .nav-links {
     position: fixed;
     inset: 0;
-    background: rgba(255, 255, 255, 0.98);
+    background: var(--surface-color); /* Solid background */
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -328,17 +326,26 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
   }
 
   /* Mobile Slider Enhancements */
-  .project-card, .activity-card { flex-basis: 100%; scroll-snap-align: center; scroll-snap-stop: always; }
   .project-slider-container, .activity-slider-container { padding: 0; }
-  .project-slider, .activity-slider { 
-    gap: 16px; /* Use gap for spacing between cards */
-    padding: 0 16px; /* Padding to show edge cards are cut off */
+  .project-viewport, .activity-viewport {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch; /* For momentum scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
   }
-  .slider-btn { display: none; }
-  .slider-indicators { display: none; }
+  .project-viewport::-webkit-scrollbar, .activity-viewport::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome/Safari */
+  }
+  .project-slider, .activity-slider {
+    padding: 0;
+    gap: 0;
+  }
+  .project-card, .activity-card { 
+    flex-basis: 100%; /* Each card takes full width */
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+  .slider-btn, .slider-indicators { display: none; }
   .swipe-indicator { display: block; }
 
   .expandable { --clamp-lines: 3; }
