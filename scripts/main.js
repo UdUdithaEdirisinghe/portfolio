@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nextBtn = sliderContainer.querySelector(nextBtnSelector);
         const indicatorsContainer = sliderContainer.querySelector(indicatorSelector);
         const slides = Array.from(slider.children);
-        
+
         if (!slider || !prevBtn || !nextBtn || !indicatorsContainer || slides.length === 0) return;
 
         let currentIndex = 0;
@@ -85,10 +85,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const gap = parseInt(getComputedStyle(slider).getPropertyValue('gap')) || 0;
 
         let isDragging = false;
+        let hasMoved = false;
         let startPos = 0;
         let currentTranslate = 0;
         let prevTranslate = 0;
-        let animationID;
+        let animationID = 0;
+        let activePointerId = null;
 
         function createIndicators() {
             indicatorsContainer.innerHTML = '';
@@ -124,14 +126,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        function updateSliderPosition() {
+        function totalStepWidth() {
             const cardWidth = slides[0].offsetWidth;
-            const totalStepWidth = cardWidth + gap;
-            currentTranslate = currentIndex * -totalStepWidth;
+            return cardWidth + gap;
+        }
+
+        function updateSliderPosition() {
+            currentTranslate = currentIndex * -totalStepWidth();
             prevTranslate = currentTranslate;
             setSliderPosition();
             updateIndicators();
-            
+
             prevBtn.disabled = currentIndex === 0;
             nextBtn.disabled = (currentIndex + slidesToShow) >= slides.length;
         }
@@ -142,42 +147,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function animation() {
             setSliderPosition();
-            if (isDragging) requestAnimationFrame(animation);
+            if (isDragging) animationID = requestAnimationFrame(animation);
         }
 
         function pointerDown(event) {
             isDragging = true;
+            hasMoved = false;
             startPos = event.clientX;
+            activePointerId = event.pointerId ?? null;
+            sliderContainer.classList.add('dragging'); // disable link clicks
             slider.style.transition = 'none';
             animationID = requestAnimationFrame(animation);
-            slider.setPointerCapture(event.pointerId);
+            if (activePointerId !== null) {
+                slider.setPointerCapture(activePointerId);
+            }
         }
 
         function pointerMove(event) {
-            if (isDragging) {
-                const currentPosition = event.clientX;
-                currentTranslate = prevTranslate + currentPosition - startPos;
-            }
+            if (!isDragging) return;
+            const currentPosition = event.clientX;
+            const delta = currentPosition - startPos;
+            if (Math.abs(delta) > 5) hasMoved = true; // treat as drag, not tap
+            currentTranslate = prevTranslate + delta;
+        }
+
+        function finishDrag() {
+            isDragging = false;
+            sliderContainer.classList.remove('dragging');
+            if (animationID) cancelAnimationFrame(animationID);
+            animationID = 0;
+            activePointerId = null;
         }
 
         function pointerUp(event) {
             if (!isDragging) return;
-            isDragging = false;
-            cancelAnimationFrame(animationID);
 
+            // Snap logic
             const movedBy = currentTranslate - prevTranslate;
+            const step = totalStepWidth();
 
-            // Snap logic: if moved more than 50px, switch slide
-            if (movedBy < -50 && (currentIndex + slidesToShow) < slides.length) {
+            // Threshold: either 50px or 1/5 of a card, whichever is smaller
+            const threshold = Math.min(50, step / 5);
+
+            if (movedBy < -threshold && (currentIndex + slidesToShow) < slides.length) {
                 currentIndex++;
-            }
-            if (movedBy > 50 && currentIndex > 0) {
+            } else if (movedBy > threshold && currentIndex > 0) {
                 currentIndex--;
             }
 
             slider.style.transition = 'transform 0.3s ease-out';
             updateSliderPosition();
-            slider.releasePointerCapture(event.pointerId);
+
+            try {
+                if (event.pointerId != null) slider.releasePointerCapture(event.pointerId);
+            } catch (_) {}
+
+            // Prevent the "ghost click" right after a drag
+            if (hasMoved) {
+                // brief suppression window — handled by pointer-events in CSS via .dragging class
+                // The class is already removed; nothing else needed here.
+            }
+
+            finishDrag();
+        }
+
+        function pointerCancel(event) {
+            // Treat as graceful end without index change
+            slider.style.transition = 'transform 0.3s ease-out';
+            setSliderPosition();
+            try {
+                if (event.pointerId != null) slider.releasePointerCapture(event.pointerId);
+            } catch (_) {}
+            finishDrag();
         }
 
         nextBtn.addEventListener('click', () => {
@@ -193,11 +234,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateSliderPosition();
             }
         });
-        
+
+        // Pointer events
         slider.addEventListener('pointerdown', pointerDown);
         slider.addEventListener('pointermove', pointerMove);
         slider.addEventListener('pointerup', pointerUp);
-        slider.addEventListener('pointerleave', (e) => { if(isDragging) pointerUp(e) }); // End drag if cursor leaves
+        slider.addEventListener('pointerleave', (e) => { if (isDragging) pointerUp(e); });
+        slider.addEventListener('pointercancel', pointerCancel);
+
+        // Prevent accidental navigation when dragging starts on a link/image
+        slider.addEventListener('click', (e) => {
+            // If the user dragged, suppress the click that follows
+            if (hasMoved) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, true); // capture to intercept early
 
         window.addEventListener('resize', () => {
             updateSlidesToShow();
@@ -205,10 +257,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentIndex = Math.max(0, slides.length - slidesToShow);
             }
             createIndicators();
+            // Recalculate based on new widths
             setTimeout(() => {
                 slider.style.transition = 'none';
                 updateSliderPosition();
-                slider.style.transition = 'transform 0.3s ease-out';
+                // give the browser a tick to apply transform without animating
+                requestAnimationFrame(() => {
+                    slider.style.transition = 'transform 0.3s ease-out';
+                });
             }, 100);
         });
 
@@ -217,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
         createIndicators();
         updateSliderPosition();
     }
-    
+
     // ---- APPLY SLIDER LOGIC TO PROJECTS ----
     setupSlider(
         '#projects',
@@ -231,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
             desktop: { slides: 2 }
         }
     );
-    
+
     // ---- APPLY SLIDER LOGIC TO ACTIVITIES ----
     setupSlider(
         '#extracurricular',
