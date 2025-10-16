@@ -1,4 +1,35 @@
 document.addEventListener('DOMContentLoaded', () => {
+  /* ---------------- MOBILE NAVIGATION ---------------- */
+  const navToggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+
+  if (navToggle && navLinks) {
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      document.body.classList.toggle('nav-open');
+      // Change icon to hamburger or 'X'
+      const icon = navToggle.querySelector('i');
+      if (navLinks.classList.contains('active')) {
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-times');
+      } else {
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      }
+    });
+
+    // Close menu when a link is clicked
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('active');
+        document.body.classList.remove('nav-open');
+        const icon = navToggle.querySelector('i');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      });
+    });
+  }
+  
   /* ---------------- MODAL GALLERY ---------------- */
   const modal = document.getElementById('image-modal');
   if (modal) {
