@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     navToggle.addEventListener('click', () => {
       navLinks.classList.toggle('active');
       document.body.classList.toggle('nav-open');
-      // Change icon to hamburger or 'X'
       const icon = navToggle.querySelector('i');
       if (navLinks.classList.contains('active')) {
         icon.classList.remove('fa-bars');
@@ -18,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Close menu when a link is clicked
     navLinks.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', () => {
         navLinks.classList.remove('active');

@@ -26,7 +26,7 @@ body {
 /* 2. NAVIGATION BAR                  */
 /* ---------------------------------- */
 .navbar {
-  background: var(--surface-color); /* Changed to solid color */
+  background: var(--surface-color);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
@@ -326,27 +326,11 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
   }
 
   /* Mobile Slider Enhancements */
+  .project-card, .activity-card { flex-basis: 100%; }
   .project-slider-container, .activity-slider-container { padding: 0; }
-  .project-viewport, .activity-viewport {
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Hide scrollbar for Firefox */
-  }
-  .project-viewport::-webkit-scrollbar, .activity-viewport::-webkit-scrollbar {
-    display: none; /* Hide scrollbar for Chrome/Safari */
-  }
-  .project-slider, .activity-slider {
-    padding: 0;
-    gap: 0;
-  }
-  .project-card, .activity-card { 
-    flex-basis: 100%; /* Each card takes full width */
-    scroll-snap-align: center;
-    scroll-snap-stop: always;
-  }
-  .slider-btn, .slider-indicators { display: none; }
-  .swipe-indicator { display: block; }
+  .project-slider, .activity-slider { gap: 0; }
+  .slider-btn { display: none; }
+  .swipe-indicator { display: none; } /* Hide swipe text, use dots instead */
 
   .expandable { --clamp-lines: 3; }
 }
