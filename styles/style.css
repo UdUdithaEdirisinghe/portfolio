@@ -180,8 +180,8 @@ section {
     display: flex;
     gap: 20px;
     transition: transform 0.5s ease-in-out;
-    touch-action: pan-y; /* Prevent vertical scroll during horizontal swipe */
-    -webkit-user-select: none; /* Prevent text selection during swipe */
+    touch-action: pan-y;
+    -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
 }
@@ -362,6 +362,26 @@ section {
     right: 5px;
 }
 
+/* INDICATOR STYLES */
+.slider-indicators {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.indicator-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #ccc;
+    border-radius: 50%;
+    margin: 0 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.indicator-dot.active {
+    background-color: var(--primary-color);
+}
 
 /* ---------------------------------- */
 /* 5. RESPONSIVE DESIGN               */
