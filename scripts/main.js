@@ -54,32 +54,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------------- EXPAND / COLLAPSE (Read more - Projects) ---------------- */
   document.querySelectorAll('#projects .expandable').forEach(p => {
-    // Check if the text is actually overflowing its clamped height
-    if (p.scrollHeight > p.clientHeight) {
-      const toggle = document.createElement('a');
-      toggle.href = '#';
-      toggle.className = 'read-more-toggle';
-      p.appendChild(toggle); // Append the toggle INSIDE the paragraph
+    // Use a short timeout to ensure the browser has calculated the layout, especially on mobile.
+    setTimeout(() => {
+      // Check if the text is actually overflowing its clamped height
+      if (p.scrollHeight > p.clientHeight) {
+        const toggle = document.createElement('a');
+        toggle.href = '#';
+        toggle.className = 'read-more-toggle';
+        p.appendChild(toggle); // Append the toggle INSIDE the paragraph
 
-      const updateToggleText = () => {
-        const isExpanded = p.classList.contains('expanded');
-        if (isExpanded) {
-          // No ellipsis when expanded, just the blue text with a leading space
-          toggle.innerHTML = `<span class="toggle-text">&nbsp;Show less</span>`;
-        } else {
-          // Ellipsis in paragraph color, text in blue
-          toggle.innerHTML = `<span class="ellipsis">&hellip;&nbsp;</span><span class="toggle-text">Read more</span>`;
-        }
-      };
+        const updateToggleText = () => {
+          const isExpanded = p.classList.contains('expanded');
+          if (isExpanded) {
+            toggle.innerHTML = `<span class="toggle-text">&nbsp;Show less</span>`;
+          } else {
+            toggle.innerHTML = `<span class="ellipsis">&hellip;&nbsp;</span><span class="toggle-text">Read more</span>`;
+          }
+        };
 
-      toggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        p.classList.toggle('expanded');
-        updateToggleText();
-      });
+        toggle.addEventListener('click', (e) => {
+          e.preventDefault();
+          p.classList.toggle('expanded');
+          updateToggleText();
+        });
 
-      updateToggleText(); // Set initial text
-    }
+        updateToggleText(); // Set initial text
+      }
+    }, 100); // 100ms delay is robust enough for layout calculation.
   });
 
 
