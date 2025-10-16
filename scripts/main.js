@@ -54,14 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------------- EXPAND / COLLAPSE (Read more - Projects) ---------------- */
   document.querySelectorAll('#projects .expandable').forEach(p => {
-    // Use a short timeout to ensure the browser has calculated the layout, especially on mobile.
     setTimeout(() => {
-      // Check if the text is actually overflowing its clamped height
       if (p.scrollHeight > p.clientHeight) {
         const toggle = document.createElement('a');
         toggle.href = '#';
         toggle.className = 'read-more-toggle';
-        p.appendChild(toggle); // Append the toggle INSIDE the paragraph
+        p.appendChild(toggle);
 
         const updateToggleText = () => {
           const isExpanded = p.classList.contains('expanded');
@@ -78,13 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
           updateToggleText();
         });
 
-        updateToggleText(); // Set initial text
+        updateToggleText();
       }
-    }, 100); // 100ms delay is robust enough for layout calculation.
+    }, 150);
   });
 
-
-  /* ---------------- SLIDER (one full card on mobile, no peeking) ---------------- */
+  /* ---------------- SLIDER ---------------- */
   function setupSlider(containerSelector, sliderSelector, prevBtnSelector, nextBtnSelector, indicatorSelector, slidesToShowConfig) {
     const sliderContainer = document.querySelector(containerSelector);
     if (!sliderContainer) return;
@@ -98,12 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!slider || !viewport || !prevBtn || !nextBtn || !indicatorsContainer || slides.length === 0) return;
 
-    viewport.style.touchAction = 'pan-y';
-
     let currentIndex = 0;
     let slidesToShow = slidesToShowConfig.desktop.slides;
     const getGap = () => parseInt(getComputedStyle(slider).getPropertyValue('gap')) || 0;
-
+    
     let isPointerDown = false, isDragging = false, hasMoved = false;
     let startX = 0, startY = 0;
     let currentTranslate = 0, prevTranslate = 0, animationID = 0;
@@ -169,11 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function pointerDown(e) {
       const p = getPoint(e);
-      isPointerDown = true;
-      isDragging = false;
-      hasMoved = false;
-      startX = p.x;
-      startY = p.y;
+      isPointerDown = true; isDragging = false; hasMoved = false;
+      startX = p.x; startY = p.y;
     }
 
     function pointerMove(e) {
@@ -188,54 +180,41 @@ document.addEventListener('DOMContentLoaded', () => {
           sliderContainer.classList.add('dragging');
           slider.style.transition = 'none';
           animationID = requestAnimationFrame(raf);
-        } else {
-          return;
-        }
+        } else { return; }
       }
-
       hasMoved = true;
       currentTranslate = prevTranslate + dx;
-
       if (e.cancelable) e.preventDefault();
     }
 
     function pointerEnd() {
       if (animationID) cancelAnimationFrame(animationID);
       animationID = 0;
-
       const w = stepWidth();
       const rawIndex = -currentTranslate / w;
       currentIndex = clampIndex(Math.round(rawIndex));
-
       slider.style.transition = 'transform 0.25s ease-out';
       snapToIndex();
-
-      isPointerDown = false;
-      isDragging = false;
+      isPointerDown = false; isDragging = false;
       sliderContainer.classList.remove('dragging');
     }
 
-    nextBtn.addEventListener('click', () => { currentIndex = clampIndex(currentIndex + 1); slider.style.transition = 'transform .25s ease-out'; snapToIndex(); });
-    prevBtn.addEventListener('click', () => { currentIndex = clampIndex(currentIndex - 1); slider.style.transition = 'transform .25s ease-out'; snapToIndex(); });
-
-    viewport.addEventListener('click', (e) => {
-      if (hasMoved) { e.preventDefault(); e.stopPropagation(); }
-    }, true);
+    nextBtn.addEventListener('click', () => { currentIndex = clampIndex(currentIndex + 1); snapToIndex(); });
+    prevBtn.addEventListener('click', () => { currentIndex = clampIndex(currentIndex - 1); snapToIndex(); });
+    viewport.addEventListener('click', (e) => { if (hasMoved) { e.preventDefault(); e.stopPropagation(); } }, true);
 
     if (supportsPointer) {
       viewport.addEventListener('pointerdown', pointerDown, { passive: true });
-      viewport.addEventListener('pointermove',  pointerMove, { passive: false });
-      viewport.addEventListener('pointerup',    pointerEnd,  { passive: true });
+      viewport.addEventListener('pointermove', pointerMove, { passive: false });
+      viewport.addEventListener('pointerup', pointerEnd, { passive: true });
       viewport.addEventListener('pointerleave', () => { if (isPointerDown) pointerEnd(); }, { passive: true });
-      viewport.addEventListener('pointercancel', pointerEnd, { passive: true });
     } else {
       viewport.addEventListener('touchstart', (e) => pointerDown(e), { passive: true });
-      viewport.addEventListener('touchmove',  (e) => pointerMove(e), { passive: false });
-      viewport.addEventListener('touchend',   () => pointerEnd(),    { passive: true });
-      viewport.addEventListener('touchcancel',() => pointerEnd(),    { passive: true });
-      viewport.addEventListener('mousedown',  (e) => pointerDown(e));
-      window.addEventListener('mousemove',    (e) => pointerMove(e));
-      window.addEventListener('mouseup',      () => pointerEnd());
+      viewport.addEventListener('touchmove', (e) => pointerMove(e), { passive: false });
+      viewport.addEventListener('touchend', () => pointerEnd(), { passive: true });
+      viewport.addEventListener('mousedown', (e) => pointerDown(e));
+      window.addEventListener('mousemove', (e) => pointerMove(e));
+      window.addEventListener('mouseup', () => pointerEnd());
     }
 
     window.addEventListener('resize', () => {
@@ -259,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
     '.prev-project-btn',
     '.next-project-btn',
     '.project-indicators',
-    { mobile:{ breakpoint:768, slides:1 }, tablet:{ breakpoint:960, slides:2 }, desktop:{ slides:2 } }
+    { mobile: { breakpoint: 768, slides: 1 }, tablet: { breakpoint: 960, slides: 2 }, desktop: { slides: 2 } }
   );
 
   setupSlider(
@@ -268,6 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
     '.prev-activity-btn',
     '.next-activity-btn',
     '.activity-indicators',
-    { mobile:{ breakpoint:768, slides:1 }, tablet:{ breakpoint:960, slides:2 }, desktop:{ slides:3 } }
+    { mobile: { breakpoint: 768, slides: 1 }, tablet: { breakpoint: 960, slides: 2 }, desktop: { slides: 3 } }
   );
 });
