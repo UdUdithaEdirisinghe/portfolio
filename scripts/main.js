@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ---- GENERIC SLIDER LOGIC WITH SMOOTH POINTER EVENTS ----
+    // ---- GENERIC SLIDER LOGIC WITH POINTER + TOUCH FALLBACK (iOS SAFE) ----
     function setupSlider(containerSelector, sliderSelector, prevBtnSelector, nextBtnSelector, indicatorSelector, slidesToShowConfig) {
         const sliderContainer = document.querySelector(containerSelector);
         if (!sliderContainer) return;
@@ -86,24 +86,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let isDragging = false;
         let hasMoved = false;
-        let startPos = 0;
+        let startX = 0;
         let currentTranslate = 0;
         let prevTranslate = 0;
         let animationID = 0;
-        let activePointerId = null;
+
+        const supportsPointer = window.PointerEvent !== undefined;
 
         function createIndicators() {
             indicatorsContainer.innerHTML = '';
             const numIndicators = slides.length - slidesToShow + 1;
             if (numIndicators <= 1) return;
-
             for (let i = 0; i < numIndicators; i++) {
                 const dot = document.createElement('div');
                 dot.classList.add('indicator-dot');
-                dot.addEventListener('click', () => {
-                    currentIndex = i;
-                    updateSliderPosition();
-                });
+                dot.addEventListener('click', () => { currentIndex = i; updateSliderPosition(); });
                 indicatorsContainer.appendChild(dot);
             }
         }
@@ -111,9 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         function updateIndicators() {
             const dots = indicatorsContainer.querySelectorAll('.indicator-dot');
             if (dots.length === 0) return;
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentIndex);
-            });
+            dots.forEach((dot, index) => dot.classList.toggle('active', index === currentIndex));
         }
 
         function updateSlidesToShow() {
@@ -126,17 +121,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        function totalStepWidth() {
+        function stepWidth() {
             const cardWidth = slides[0].offsetWidth;
             return cardWidth + gap;
         }
 
         function updateSliderPosition() {
-            currentTranslate = currentIndex * -totalStepWidth();
+            currentTranslate = currentIndex * -stepWidth();
             prevTranslate = currentTranslate;
             setSliderPosition();
             updateIndicators();
-
             prevBtn.disabled = currentIndex === 0;
             nextBtn.disabled = (currentIndex + slidesToShow) >= slides.length;
         }
@@ -150,84 +144,77 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isDragging) animationID = requestAnimationFrame(animation);
         }
 
-        function pointerDown(event) {
+        // ---- Unified helpers for coords and end-of-drag ----
+        const getClientX = (e) => {
+            if (e.touches && e.touches.length) return e.touches[0].clientX;
+            if (e.changedTouches && e.changedTouches.length) return e.changedTouches[0].clientX;
+            return e.clientX;
+        };
+
+        function beginDrag(x) {
             isDragging = true;
             hasMoved = false;
-            startPos = event.clientX;
-            activePointerId = event.pointerId ?? null;
-            sliderContainer.classList.add('dragging'); // disable link clicks
+            startX = x;
+            sliderContainer.classList.add('dragging'); // disables link clicks
             slider.style.transition = 'none';
             animationID = requestAnimationFrame(animation);
-            if (activePointerId !== null) {
-                slider.setPointerCapture(activePointerId);
-            }
         }
 
-        function pointerMove(event) {
+        function moveDrag(x) {
             if (!isDragging) return;
-            const currentPosition = event.clientX;
-            const delta = currentPosition - startPos;
-            if (Math.abs(delta) > 5) hasMoved = true; // treat as drag, not tap
+            const delta = x - startX;
+            if (Math.abs(delta) > 5) hasMoved = true; // treat as drag
             currentTranslate = prevTranslate + delta;
         }
 
-        function finishDrag() {
-            isDragging = false;
-            sliderContainer.classList.remove('dragging');
-            if (animationID) cancelAnimationFrame(animationID);
-            animationID = 0;
-            activePointerId = null;
-        }
-
-        function pointerUp(event) {
+        function endDrag(x) {
             if (!isDragging) return;
-
-            // Snap logic
             const movedBy = currentTranslate - prevTranslate;
-            const step = totalStepWidth();
-
-            // Threshold: either 50px or 1/5 of a card, whichever is smaller
+            const step = stepWidth();
             const threshold = Math.min(50, step / 5);
 
-            if (movedBy < -threshold && (currentIndex + slidesToShow) < slides.length) {
-                currentIndex++;
-            } else if (movedBy > threshold && currentIndex > 0) {
-                currentIndex--;
-            }
+            if (movedBy < -threshold && (currentIndex + slidesToShow) < slides.length) currentIndex++;
+            else if (movedBy > threshold && currentIndex > 0) currentIndex--;
 
             slider.style.transition = 'transform 0.3s ease-out';
             updateSliderPosition();
 
-            try {
-                if (event.pointerId != null) slider.releasePointerCapture(event.pointerId);
-            } catch (_) {}
-
-            // Prevent the "ghost click" right after a drag
-            if (hasMoved) {
-                // brief suppression window — handled by pointer-events in CSS via .dragging class
-                // The class is already removed; nothing else needed here.
-            }
-
-            finishDrag();
+            if (animationID) cancelAnimationFrame(animationID);
+            animationID = 0;
+            isDragging = false;
+            sliderContainer.classList.remove('dragging');
         }
 
-        function pointerCancel(event) {
-            // Treat as graceful end without index change
+        // ---- Pointer events (desktop + modern mobile) ----
+        function onPointerDown(e) { beginDrag(getClientX(e)); }
+        function onPointerMove(e) { moveDrag(getClientX(e)); }
+        function onPointerUp(e)   { endDrag(getClientX(e)); }
+
+        // ---- Touch fallback (iOS Safari robustness) ----
+        function onTouchStart(e) { beginDrag(getClientX(e)); }
+        function onTouchMove(e)  {
+            // prevent the page from scrolling horizontally while dragging
+            if (isDragging) e.preventDefault();
+            moveDrag(getClientX(e));
+        }
+        function onTouchEnd(e)   { endDrag(getClientX(e)); }
+        function onTouchCancel() {
+            // gracefully snap back without index change
             slider.style.transition = 'transform 0.3s ease-out';
             setSliderPosition();
-            try {
-                if (event.pointerId != null) slider.releasePointerCapture(event.pointerId);
-            } catch (_) {}
-            finishDrag();
+            if (animationID) cancelAnimationFrame(animationID);
+            animationID = 0;
+            isDragging = false;
+            sliderContainer.classList.remove('dragging');
         }
 
+        // Buttons
         nextBtn.addEventListener('click', () => {
             if ((currentIndex + slidesToShow) < slides.length) {
                 currentIndex++;
                 updateSliderPosition();
             }
         });
-
         prevBtn.addEventListener('click', () => {
             if (currentIndex > 0) {
                 currentIndex--;
@@ -235,21 +222,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Pointer events
-        slider.addEventListener('pointerdown', pointerDown);
-        slider.addEventListener('pointermove', pointerMove);
-        slider.addEventListener('pointerup', pointerUp);
-        slider.addEventListener('pointerleave', (e) => { if (isDragging) pointerUp(e); });
-        slider.addEventListener('pointercancel', pointerCancel);
-
-        // Prevent accidental navigation when dragging starts on a link/image
+        // Prevent accidental navigation when a drag just happened
         slider.addEventListener('click', (e) => {
-            // If the user dragged, suppress the click that follows
             if (hasMoved) {
                 e.preventDefault();
                 e.stopPropagation();
             }
-        }, true); // capture to intercept early
+        }, true);
+
+        // Register input handlers
+        if (supportsPointer) {
+            slider.addEventListener('pointerdown', onPointerDown);
+            slider.addEventListener('pointermove', onPointerMove);
+            slider.addEventListener('pointerup', onPointerUp);
+            slider.addEventListener('pointerleave', (e) => { if (isDragging) onPointerUp(e); });
+            slider.addEventListener('pointercancel', onTouchCancel);
+        } else {
+            // iOS-safe touch fallback (use passive:false on move to allow preventDefault)
+            slider.addEventListener('touchstart', onTouchStart, { passive: true });
+            slider.addEventListener('touchmove', onTouchMove, { passive: false });
+            slider.addEventListener('touchend', onTouchEnd, { passive: true });
+            slider.addEventListener('touchcancel', onTouchCancel, { passive: true });
+            // mouse as last resort
+            slider.addEventListener('mousedown', (e) => onPointerDown(e));
+            window.addEventListener('mousemove', (e) => onPointerMove(e));
+            window.addEventListener('mouseup',   (e) => onPointerUp(e));
+        }
 
         window.addEventListener('resize', () => {
             updateSlidesToShow();
@@ -257,18 +255,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentIndex = Math.max(0, slides.length - slidesToShow);
             }
             createIndicators();
-            // Recalculate based on new widths
             setTimeout(() => {
                 slider.style.transition = 'none';
                 updateSliderPosition();
-                // give the browser a tick to apply transform without animating
                 requestAnimationFrame(() => {
                     slider.style.transition = 'transform 0.3s ease-out';
                 });
             }, 100);
         });
 
-        // Initial Setup
+        // Initial setup
         updateSlidesToShow();
         createIndicators();
         updateSliderPosition();
