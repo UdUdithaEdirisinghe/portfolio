@@ -65,7 +65,6 @@ section{padding:40px 0}
 .project-slider-container,.activity-slider-container{position:relative;padding:0 50px}
 .project-viewport,.activity-viewport{
   overflow:hidden;
-  /* Allow vertical scroll; we'll only intercept on clear horizontal drag */
   touch-action:pan-y;
   -webkit-overflow-scrolling:touch;
 }
@@ -96,7 +95,7 @@ section{padding:40px 0}
 }
 .project-content h3{font-size:1.2rem;margin-bottom:10px}
 .project-content p{flex-grow:0;margin-bottom:16px;font-size:.95rem}
-.project-links{display:flex;gap:10px}
+.project-links{margin-top:auto;display:flex;gap:10px}
 
 .activity-card h3{margin:0 0 5px}
 .activity-card .org{color:var(--text-color);font-weight:600;margin-bottom:2px;font-size:.95rem}
@@ -104,52 +103,71 @@ section{padding:40px 0}
 .activity-card .desc{font-size:.9rem;line-height:1.6}
 
 /* ---------------------------------- */
-/* 5. EXPANDABLE TEXT                 */
+/* 5. EXPANDABLE TEXT (INLINE TOGGLE) */
 /* ---------------------------------- */
 .expandable{
-  position:relative;
-  display:block;
+  position: relative;
   overflow:hidden;
-  /* default collapsed */
   --clamp-lines:4;
-  max-height:calc(1.6em * var(--clamp-lines));
-}
-.expandable::after{
-  /* fade mask when collapsed */
-  content:"";
-  position:absolute;left:0;right:0;bottom:0;height:2.5em;
-  background:linear-gradient(to bottom, rgba(255,255,255,0), var(--surface-color));
-  pointer-events:none;
+  max-height:calc(1.7 * .95rem * var(--clamp-lines));
+  margin-bottom: 16px;
 }
 .expandable.expanded{
   max-height:none;
 }
-.expandable.expanded::after{
-  display:none;
+.read-more-toggle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  display: inline;
+  cursor: pointer;
+  padding-left: 3em; /* Give more space for the fade effect */
+  background: linear-gradient(to right, transparent, var(--surface-color) 30%); /* Start solid color earlier to hide text */
+  font-size: .95rem;
+  font-weight: 300;
 }
-.expand-btn{
-  align-self:flex-start;
-  background:var(--surface-color);
-  border:1px solid var(--border-color);
-  padding:8px 14px;border-radius:999px;
-  font-weight:600;cursor:pointer;
-  transition:transform .15s ease, background-color .2s ease;
+.read-more-toggle .ellipsis {
+  color: var(--light-text-color);
 }
-.expand-btn:hover{transform:translateY(-1px);background:var(--background-color)}
+.read-more-toggle .toggle-text {
+  color: var(--primary-color);
+}
+.expandable.expanded .read-more-toggle {
+  position: static;
+  background: none;
+  padding-left: 0.5em;
+}
+.read-more-toggle:hover .toggle-text {
+  text-decoration: underline;
+}
 
 /* ---------------------------------- */
 /* 6. BUTTONS & INDICATORS            */
 /* ---------------------------------- */
 .btn{
-  display:inline-block;padding:10px 22px;border-radius:50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding:10px 22px;border-radius:50px;
   text-decoration:none;font-weight:600;
-  transition:background-color .3s ease, transform .2s ease;
+  transition:background-color .2s ease, transform .2s ease, border-color .2s ease;
+}
+.btn i {
+  margin-right: 8px;
 }
 .btn:hover{transform:translateY(-2px)}
 .btn.btn-primary{background-color:var(--primary-color);color:#fff}
 .btn.btn-primary:hover{background-color:#0b3a82}
-.project-links .btn{background:var(--surface-color);color:var(--primary-color);border:1px solid var(--border-color)}
-.project-links .btn:hover{background:var(--background-color);border-color:var(--secondary-color)}
+
+.project-links .btn{
+  background:var(--surface-color);
+  color:var(--primary-color);
+  border:1px solid var(--border-color);
+}
+.project-links .btn:hover{
+  background:var(--background-color);
+  border-color:#dee2e6;
+}
 
 .slider-btn{
   position:absolute;top:50%;transform:translateY(-50%);
@@ -174,7 +192,6 @@ section{padding:40px 0}
 .swipe-indicator{display:none;text-align:center;margin-top:15px;font-size:.85rem;color:var(--light-text-color)}
 .swipe-indicator i{margin-right:8px;vertical-align:middle}
 
-/* Prevent ghost-clicks during drags */
 .dragging a{pointer-events:none!important}
 
 /* ---------------------------------- */
@@ -186,10 +203,9 @@ section{padding:40px 0}
 @media (max-width:768px){
   .project-card,.activity-card{flex-basis:100%}
   .project-slider-container,.activity-slider-container{padding:0}
-  .project-slider,.activity-slider{gap:0}           /* no peeking */
+  .project-slider,.activity-slider{gap:0}
   .slider-btn{display:none}
   .swipe-indicator{display:block}
-  /* clamp a bit tighter on very small screens */
   .expandable{--clamp-lines:3}
 }
 @media (max-width:600px){

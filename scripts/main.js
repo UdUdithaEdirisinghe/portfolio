@@ -52,35 +52,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ---------------- EXPAND / COLLAPSE (Read more) ---------------- */
-  document.querySelectorAll('.expand-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetId = btn.getAttribute('aria-controls');
-      const target = document.getElementById(targetId);
-      const expanded = btn.getAttribute('aria-expanded') === 'true';
-      if (!target) return;
+  /* ---------------- EXPAND / COLLAPSE (Read more - Projects) ---------------- */
+  document.querySelectorAll('#projects .expandable').forEach(p => {
+    // Check if the text is actually overflowing its clamped height
+    if (p.scrollHeight > p.clientHeight) {
+      const toggle = document.createElement('a');
+      toggle.href = '#';
+      toggle.className = 'read-more-toggle';
+      p.appendChild(toggle); // Append the toggle INSIDE the paragraph
 
-      if (expanded) {
-        btn.setAttribute('aria-expanded', 'false');
-        btn.textContent = 'Read more';
-        target.classList.remove('expanded');
-        // On collapse, ensure the button remains in view
-        btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      } else {
-        btn.setAttribute('aria-expanded', 'true');
-        btn.textContent = 'Show less';
-        target.classList.add('expanded');
-      }
-    });
+      const updateToggleText = () => {
+        const isExpanded = p.classList.contains('expanded');
+        if (isExpanded) {
+          // No ellipsis when expanded, just the blue text with a leading space
+          toggle.innerHTML = `<span class="toggle-text">&nbsp;Show less</span>`;
+        } else {
+          // Ellipsis in paragraph color, text in blue
+          toggle.innerHTML = `<span class="ellipsis">&hellip;&nbsp;</span><span class="toggle-text">Read more</span>`;
+        }
+      };
+
+      toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        p.classList.toggle('expanded');
+        updateToggleText();
+      });
+
+      updateToggleText(); // Set initial text
+    }
   });
+
 
   /* ---------------- SLIDER (one full card on mobile, no peeking) ---------------- */
   function setupSlider(containerSelector, sliderSelector, prevBtnSelector, nextBtnSelector, indicatorSelector, slidesToShowConfig) {
     const sliderContainer = document.querySelector(containerSelector);
     if (!sliderContainer) return;
 
-    const slider = sliderContainer.querySelector(sliderSelector);   // translating element
-    const viewport = slider?.parentElement;                         // static element for gestures
+    const slider = sliderContainer.querySelector(sliderSelector);
+    const viewport = slider?.parentElement;
     const prevBtn = sliderContainer.querySelector(prevBtnSelector);
     const nextBtn = sliderContainer.querySelector(nextBtnSelector);
     const indicatorsContainer = sliderContainer.querySelector(indicatorSelector);
@@ -88,23 +97,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!slider || !viewport || !prevBtn || !nextBtn || !indicatorsContainer || slides.length === 0) return;
 
-    // Allow vertical scroll; intercept only after clear horizontal intent
     viewport.style.touchAction = 'pan-y';
 
     let currentIndex = 0;
     let slidesToShow = slidesToShowConfig.desktop.slides;
     const getGap = () => parseInt(getComputedStyle(slider).getPropertyValue('gap')) || 0;
 
-    // Gesture state
-    let isPointerDown = false;
-    let isDragging = false; // horizontal drag confirmed
-    let hasMoved = false;
-    let startX = 0;
-    let startY = 0;
-    let currentTranslate = 0;
-    let prevTranslate = 0;
-    let animationID = 0;
-
+    let isPointerDown = false, isDragging = false, hasMoved = false;
+    let startX = 0, startY = 0;
+    let currentTranslate = 0, prevTranslate = 0, animationID = 0;
     const supportsPointer = window.PointerEvent !== undefined;
 
     function createIndicators() {
@@ -129,13 +130,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const w = window.innerWidth;
       if (w <= slidesToShowConfig.mobile.breakpoint)      slidesToShow = slidesToShowConfig.mobile.slides;
       else if (w <= slidesToShowConfig.tablet.breakpoint) slidesToShow = slidesToShowConfig.tablet.slides;
-      else                                                slidesToShow = slidesToShowConfig.desktop.slides;
+      else                                                  slidesToShow = slidesToShowConfig.desktop.slides;
     }
 
     function stepWidth() {
-      // On mobile (slidesToShow=1), use viewport width so card = full width and no peeking
-      if (slidesToShow === 1) return viewport.clientWidth; 
-      // Otherwise use card width + gap
+      if (slidesToShow === 1) return viewport.clientWidth;
       const cardWidth = slides[0].offsetWidth;
       return cardWidth + getGap();
     }
@@ -165,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return { x: (t ? t.clientX : e.clientX), y: (t ? t.clientY : e.clientY) };
     };
 
-    const H_THRESHOLD = 6; // px before we consider it a horizontal intent
+    const H_THRESHOLD = 6;
 
     function pointerDown(e) {
       const p = getPoint(e);
@@ -174,7 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
       hasMoved = false;
       startX = p.x;
       startY = p.y;
-      // Don't change CSS yet; wait for horizontal intent
     }
 
     function pointerMove(e) {
@@ -183,24 +181,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const dx = p.x - startX;
       const dy = p.y - startY;
 
-      // Decide intent
       if (!isDragging) {
         if (Math.abs(dx) > H_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
           isDragging = true;
-          sliderContainer.classList.add('dragging'); // suppress link clicks
+          sliderContainer.classList.add('dragging');
           slider.style.transition = 'none';
           animationID = requestAnimationFrame(raf);
         } else {
-          // vertical scroll or not enough movement; let the browser handle it
           return;
         }
       }
 
-      // Horizontal drag in progress
       hasMoved = true;
       currentTranslate = prevTranslate + dx;
 
-      // Prevent scroll during horizontal drag
       if (e.cancelable) e.preventDefault();
     }
 
@@ -208,7 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (animationID) cancelAnimationFrame(animationID);
       animationID = 0;
 
-      // Compute final index based on nearest step (strict snap)
       const w = stepWidth();
       const rawIndex = -currentTranslate / w;
       currentIndex = clampIndex(Math.round(rawIndex));
@@ -221,16 +214,13 @@ document.addEventListener('DOMContentLoaded', () => {
       sliderContainer.classList.remove('dragging');
     }
 
-    // Buttons
     nextBtn.addEventListener('click', () => { currentIndex = clampIndex(currentIndex + 1); slider.style.transition = 'transform .25s ease-out'; snapToIndex(); });
     prevBtn.addEventListener('click', () => { currentIndex = clampIndex(currentIndex - 1); slider.style.transition = 'transform .25s ease-out'; snapToIndex(); });
 
-    // Suppress post-drag clicks from anchors/images
     viewport.addEventListener('click', (e) => {
       if (hasMoved) { e.preventDefault(); e.stopPropagation(); }
     }, true);
 
-    // Bind to static viewport (more reliable on iOS Safari)
     if (supportsPointer) {
       viewport.addEventListener('pointerdown', pointerDown, { passive: true });
       viewport.addEventListener('pointermove',  pointerMove, { passive: false });
@@ -238,22 +228,18 @@ document.addEventListener('DOMContentLoaded', () => {
       viewport.addEventListener('pointerleave', () => { if (isPointerDown) pointerEnd(); }, { passive: true });
       viewport.addEventListener('pointercancel', pointerEnd, { passive: true });
     } else {
-      // Touch fallback
       viewport.addEventListener('touchstart', (e) => pointerDown(e), { passive: true });
       viewport.addEventListener('touchmove',  (e) => pointerMove(e), { passive: false });
       viewport.addEventListener('touchend',   () => pointerEnd(),    { passive: true });
       viewport.addEventListener('touchcancel',() => pointerEnd(),    { passive: true });
-      // Mouse fallback
       viewport.addEventListener('mousedown',  (e) => pointerDown(e));
       window.addEventListener('mousemove',    (e) => pointerMove(e));
       window.addEventListener('mouseup',      () => pointerEnd());
     }
 
     window.addEventListener('resize', () => {
-      const oldWidth = stepWidth();
       updateSlidesToShow();
       createIndicators();
-      // After resize/orientation change, keep the current index aligned to new width
       setTimeout(() => {
         slider.style.transition = 'none';
         snapToIndex();
@@ -261,13 +247,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 100);
     });
 
-    // Init
     updateSlidesToShow();
     createIndicators();
     snapToIndex();
   }
 
-  // Apply to both sliders
   setupSlider(
     '#projects',
     '.project-slider',
