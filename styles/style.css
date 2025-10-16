@@ -13,11 +13,7 @@
     --border-radius: 12px;
 }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { scroll-behavior: smooth; }
 
@@ -28,30 +24,15 @@ body {
     line-height: 1.7;
 }
 
-main {
-    max-width: 960px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
+main { max-width: 960px; margin: 40px auto; padding: 0 20px; }
 
-h1, h2, h3 {
-    font-weight: 700;
-    color: var(--primary-color);
-}
+h1, h2, h3 { font-weight: 700; color: var(--primary-color); }
 
-h2 {
-    font-size: 2rem;
-    margin-bottom: 25px;
-    text-align: center;
-}
+h2 { font-size: 2rem; margin-bottom: 25px; text-align: center; }
 
 p { color: var(--light-text-color); font-weight: 300; }
 
-a {
-    color: var(--secondary-color);
-    text-decoration: none;
-    font-weight: 600;
-}
+a { color: var(--secondary-color); text-decoration: none; font-weight: 600; }
 
 /* ---------------------------------- */
 /* 2. HEADER & SECTIONS               */
@@ -104,7 +85,7 @@ section { padding: 40px 0; }
     font-weight: 600;
 }
 
-/* SLIDER STYLES */
+/* SLIDER LAYOUT */
 .project-slider-container,
 .activity-slider-container {
     position: relative;
@@ -112,17 +93,23 @@ section { padding: 40px 0; }
 }
 
 .project-viewport,
-.activity-viewport { overflow: hidden; }
+.activity-viewport {
+    overflow: hidden;
+    /* iOS/Safari: viewport owns the gesture for reliable swipes */
+    touch-action: none;
+    -webkit-overflow-scrolling: touch;
+}
 
 .project-slider,
 .activity-slider {
     display: flex;
     gap: 20px;
     transition: transform 0.3s ease-out;
-    touch-action: pan-y; /* Crucial for smooth vertical scrolling on touch devices */
+    /* gesture handled by the viewport; avoid competing touch-action here */
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    will-change: transform;
 }
 
 .project-card,
@@ -274,11 +261,19 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
 /* ---------------------------------- */
 /* 9. MODAL GALLERY STYLES            */
 /* ---------------------------------- */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 1000; opacity: 0; transition: opacity 0.3s ease; }
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; opacity: 0; transition: opacity 0.3s ease;
+}
 .modal-overlay.visible { display: flex; opacity: 1; }
 .modal-content { position: relative; max-width: 90%; max-height: 85%; }
 #modal-image { width: 100%; height: 100%; max-height: 80vh; object-fit: contain; border-radius: 4px; }
-.modal-close, .modal-prev, .modal-next { position: absolute; color: white; font-size: 3rem; font-weight: bold; cursor: pointer; user-select: none; transition: color 0.2s ease; }
+.modal-close, .modal-prev, .modal-next {
+    position: absolute; color: white; font-size: 3rem; font-weight: bold;
+    cursor: pointer; user-select: none; transition: color 0.2s ease;
+}
 .modal-close:hover, .modal-prev:hover, .modal-next:hover { color: #bbb; }
 .modal-close { top: 15px; right: 35px; }
 .modal-prev, .modal-next { top: 50%; transform: translateY(-50%); }

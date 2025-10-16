@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ---- MODAL GALLERY LOGIC ----
+    /* ---------------- MODAL GALLERY ---------------- */
     const modal = document.getElementById('image-modal');
     if (modal) {
         const modalImage = document.getElementById('modal-image');
@@ -37,48 +37,38 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        function showNextImage() {
-            if (currentIndex < galleryItems.length - 1) {
-                currentIndex++;
-                updateModalImage();
-            }
-        }
-
-        function showPrevImage() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateModalImage();
-            }
-        }
+        function showNextImage() { if (currentIndex < galleryItems.length - 1) { currentIndex++; updateModalImage(); } }
+        function showPrevImage() { if (currentIndex > 0) { currentIndex--; updateModalImage(); } }
 
         closeModal.addEventListener('click', () => modal.classList.remove('visible'));
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) modal.classList.remove('visible');
-        });
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('visible'); });
         nextButton.addEventListener('click', showNextImage);
         prevButton.addEventListener('click', showPrevImage);
 
         document.addEventListener('keydown', (e) => {
-            if (modal.classList.contains('visible')) {
-                if (e.key === 'ArrowRight') showNextImage();
-                else if (e.key === 'ArrowLeft') showPrevImage();
-                else if (e.key === 'Escape') modal.classList.remove('visible');
-            }
+            if (!modal.classList.contains('visible')) return;
+            if (e.key === 'ArrowRight') showNextImage();
+            else if (e.key === 'ArrowLeft') showPrevImage();
+            else if (e.key === 'Escape') modal.classList.remove('visible');
         });
     }
 
-    // ---- GENERIC SLIDER LOGIC WITH POINTER + TOUCH FALLBACK (iOS SAFE) ----
+    /* ---------------- SLIDER (viewport-bound, iOS-safe) ---------------- */
     function setupSlider(containerSelector, sliderSelector, prevBtnSelector, nextBtnSelector, indicatorSelector, slidesToShowConfig) {
         const sliderContainer = document.querySelector(containerSelector);
         if (!sliderContainer) return;
 
-        const slider = sliderContainer.querySelector(sliderSelector);
+        const slider = sliderContainer.querySelector(sliderSelector);   // translating element
+        const viewport = slider?.parentElement;                         // static element (bind gestures here)
         const prevBtn = sliderContainer.querySelector(prevBtnSelector);
         const nextBtn = sliderContainer.querySelector(nextBtnSelector);
         const indicatorsContainer = sliderContainer.querySelector(indicatorSelector);
-        const slides = Array.from(slider.children);
+        const slides = slider ? Array.from(slider.children) : [];
 
-        if (!slider || !prevBtn || !nextBtn || !indicatorsContainer || slides.length === 0) return;
+        if (!slider || !viewport || !prevBtn || !nextBtn || !indicatorsContainer || slides.length === 0) return;
+
+        // iOS Safari: ensure the viewport owns the gesture
+        viewport.style.touchAction = 'none';
 
         let currentIndex = 0;
         let slidesToShow = slidesToShowConfig.desktop.slides;
@@ -107,67 +97,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function updateIndicators() {
             const dots = indicatorsContainer.querySelectorAll('.indicator-dot');
-            if (dots.length === 0) return;
-            dots.forEach((dot, index) => dot.classList.toggle('active', index === currentIndex));
+            dots.forEach((dot, idx) => dot.classList.toggle('active', idx === currentIndex));
         }
 
         function updateSlidesToShow() {
-            if (window.innerWidth <= slidesToShowConfig.mobile.breakpoint) {
-                slidesToShow = slidesToShowConfig.mobile.slides;
-            } else if (window.innerWidth <= slidesToShowConfig.tablet.breakpoint) {
-                slidesToShow = slidesToShowConfig.tablet.slides;
-            } else {
-                slidesToShow = slidesToShowConfig.desktop.slides;
-            }
+            if (window.innerWidth <= slidesToShowConfig.mobile.breakpoint)      slidesToShow = slidesToShowConfig.mobile.slides;
+            else if (window.innerWidth <= slidesToShowConfig.tablet.breakpoint) slidesToShow = slidesToShowConfig.tablet.slides;
+            else                                                                slidesToShow = slidesToShowConfig.desktop.slides;
         }
 
-        function stepWidth() {
-            const cardWidth = slides[0].offsetWidth;
-            return cardWidth + gap;
-        }
+        const stepWidth = () => slides[0].offsetWidth + gap;
 
         function updateSliderPosition() {
             currentTranslate = currentIndex * -stepWidth();
             prevTranslate = currentTranslate;
-            setSliderPosition();
+            slider.style.transform = `translateX(${currentTranslate}px)`;
             updateIndicators();
             prevBtn.disabled = currentIndex === 0;
             nextBtn.disabled = (currentIndex + slidesToShow) >= slides.length;
         }
 
-        function setSliderPosition() {
+        function raf() {
             slider.style.transform = `translateX(${currentTranslate}px)`;
+            if (isDragging) animationID = requestAnimationFrame(raf);
         }
 
-        function animation() {
-            setSliderPosition();
-            if (isDragging) animationID = requestAnimationFrame(animation);
-        }
+        const getX = (e) => (e.touches?.[0]?.clientX ?? e.changedTouches?.[0]?.clientX ?? e.clientX);
 
-        // ---- Unified helpers for coords and end-of-drag ----
-        const getClientX = (e) => {
-            if (e.touches && e.touches.length) return e.touches[0].clientX;
-            if (e.changedTouches && e.changedTouches.length) return e.changedTouches[0].clientX;
-            return e.clientX;
-        };
-
-        function beginDrag(x) {
+        function begin(x) {
             isDragging = true;
             hasMoved = false;
             startX = x;
-            sliderContainer.classList.add('dragging'); // disables link clicks
+            sliderContainer.classList.add('dragging'); // block link clicks while dragging
             slider.style.transition = 'none';
-            animationID = requestAnimationFrame(animation);
+            animationID = requestAnimationFrame(raf);
         }
 
-        function moveDrag(x) {
+        function move(x) {
             if (!isDragging) return;
             const delta = x - startX;
-            if (Math.abs(delta) > 5) hasMoved = true; // treat as drag
+            if (Math.abs(delta) > 5) hasMoved = true;
             currentTranslate = prevTranslate + delta;
         }
 
-        function endDrag(x) {
+        function end() {
             if (!isDragging) return;
             const movedBy = currentTranslate - prevTranslate;
             const step = stepWidth();
@@ -185,68 +158,47 @@ document.addEventListener('DOMContentLoaded', () => {
             sliderContainer.classList.remove('dragging');
         }
 
-        // ---- Pointer events (desktop + modern mobile) ----
-        function onPointerDown(e) { beginDrag(getClientX(e)); }
-        function onPointerMove(e) { moveDrag(getClientX(e)); }
-        function onPointerUp(e)   { endDrag(getClientX(e)); }
-
-        // ---- Touch fallback (iOS Safari robustness) ----
-        function onTouchStart(e) { beginDrag(getClientX(e)); }
-        function onTouchMove(e)  {
-            // prevent the page from scrolling horizontally while dragging
-            if (isDragging) e.preventDefault();
-            moveDrag(getClientX(e));
-        }
-        function onTouchEnd(e)   { endDrag(getClientX(e)); }
-        function onTouchCancel() {
-            // gracefully snap back without index change
-            slider.style.transition = 'transform 0.3s ease-out';
-            setSliderPosition();
-            if (animationID) cancelAnimationFrame(animationID);
-            animationID = 0;
-            isDragging = false;
-            sliderContainer.classList.remove('dragging');
-        }
-
         // Buttons
         nextBtn.addEventListener('click', () => {
-            if ((currentIndex + slidesToShow) < slides.length) {
-                currentIndex++;
-                updateSliderPosition();
-            }
+            if ((currentIndex + slidesToShow) < slides.length) { currentIndex++; updateSliderPosition(); }
         });
         prevBtn.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateSliderPosition();
-            }
+            if (currentIndex > 0) { currentIndex--; updateSliderPosition(); }
         });
 
-        // Prevent accidental navigation when a drag just happened
-        slider.addEventListener('click', (e) => {
-            if (hasMoved) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
+        // Suppress post-drag clicks from anchors/images
+        viewport.addEventListener('click', (e) => {
+            if (hasMoved) { e.preventDefault(); e.stopPropagation(); }
         }, true);
 
-        // Register input handlers
+        // Bind to the STATIC viewport
         if (supportsPointer) {
-            slider.addEventListener('pointerdown', onPointerDown);
-            slider.addEventListener('pointermove', onPointerMove);
-            slider.addEventListener('pointerup', onPointerUp);
-            slider.addEventListener('pointerleave', (e) => { if (isDragging) onPointerUp(e); });
-            slider.addEventListener('pointercancel', onTouchCancel);
+            viewport.addEventListener('pointerdown', (e) => begin(getX(e)));
+            viewport.addEventListener('pointermove', (e) => move(getX(e)));
+            viewport.addEventListener('pointerup',   end);
+            viewport.addEventListener('pointerleave', () => { if (isDragging) end(); });
+            viewport.addEventListener('pointercancel', () => {
+                slider.style.transition = 'transform 0.3s ease-out';
+                slider.style.transform = `translateX(${prevTranslate}px)`;
+                if (animationID) cancelAnimationFrame(animationID);
+                animationID = 0; isDragging = false; sliderContainer.classList.remove('dragging');
+            });
         } else {
-            // iOS-safe touch fallback (use passive:false on move to allow preventDefault)
-            slider.addEventListener('touchstart', onTouchStart, { passive: true });
-            slider.addEventListener('touchmove', onTouchMove, { passive: false });
-            slider.addEventListener('touchend', onTouchEnd, { passive: true });
-            slider.addEventListener('touchcancel', onTouchCancel, { passive: true });
-            // mouse as last resort
-            slider.addEventListener('mousedown', (e) => onPointerDown(e));
-            window.addEventListener('mousemove', (e) => onPointerMove(e));
-            window.addEventListener('mouseup',   (e) => onPointerUp(e));
+            // iOS-safe touch fallback
+            viewport.addEventListener('touchstart', (e) => begin(getX(e)), { passive: true });
+            viewport.addEventListener('touchmove',  (e) => { if (isDragging) e.preventDefault(); move(getX(e)); }, { passive: false });
+            viewport.addEventListener('touchend',   end, { passive: true });
+            viewport.addEventListener('touchcancel', () => {
+                slider.style.transition = 'transform 0.3s ease-out';
+                slider.style.transform = `translateX(${prevTranslate}px)`;
+                if (animationID) cancelAnimationFrame(animationID);
+                animationID = 0; isDragging = false; sliderContainer.classList.remove('dragging');
+            });
+
+            // Desktop mouse fallback
+            viewport.addEventListener('mousedown', (e) => begin(getX(e)));
+            window.addEventListener('mousemove', (e) => move(getX(e)));
+            window.addEventListener('mouseup',   end);
         }
 
         window.addEventListener('resize', () => {
@@ -258,13 +210,11 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 slider.style.transition = 'none';
                 updateSliderPosition();
-                requestAnimationFrame(() => {
-                    slider.style.transition = 'transform 0.3s ease-out';
-                });
+                requestAnimationFrame(() => slider.style.transition = 'transform 0.3s ease-out');
             }, 100);
         });
 
-        // Initial setup
+        // Init
         updateSlidesToShow();
         createIndicators();
         updateSliderPosition();
