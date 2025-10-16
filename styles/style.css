@@ -286,12 +286,30 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
 }
 
 @media (max-width: 768px) {
+  main { padding: 0 16px; }
+  header { padding: 48px 20px; }
   header h1 { font-size: 2.5rem; }
-  .navbar { gap: 15px; justify-content: space-around; font-size: 0.9rem; }
+  
+  .navbar {
+    gap: 0;
+    justify-content: space-around;
+    padding: 15px 10px;
+  }
+  .navbar a {
+    padding: 5px;
+    font-size: 0.8rem;
+  }
+
+  h2 { font-size: 1.8rem; }
+  .card { padding: 24px; }
+  .project-content, .activity-text-content { padding: 20px; }
+
   .project-card, .activity-card { flex-basis: 100%; }
   .project-slider-container, .activity-slider-container { padding: 0; }
   .project-slider, .activity-slider { gap: 0; }
   .slider-btn { display: none; }
+  .slider-indicators {display: none;}
   .swipe-indicator { display: block; }
+
   .expandable { --clamp-lines: 3; }
 }

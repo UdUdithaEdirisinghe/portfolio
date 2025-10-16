@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 
   setupSlider(
-    '#extracurricular',
+    '#volunteering',
     '.activity-slider',
     '.prev-activity-btn',
     '.next-activity-btn',
