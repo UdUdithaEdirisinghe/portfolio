@@ -106,13 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if(isDragging) requestAnimationFrame(animation);
         }
 
-        function touchStart(index) {
-            return function(event) {
-                isDragging = true;
-                startPos = getPositionX(event);
-                animationID = requestAnimationFrame(animation);
-                slider.style.transition = 'none'; // Disable transition while dragging
-            }
+        function touchStart(event) {
+            isDragging = true;
+            startPos = getPositionX(event);
+            animationID = requestAnimationFrame(animation);
+            slider.style.transition = 'none'; // Disable transition while dragging
         }
 
         function touchMove(event) {
@@ -128,9 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const movedBy = currentTranslate - prevTranslate;
             
-            // Snap logic: if moved more than 30% of a card's width, or a quick flick
-            if (movedBy < -50 && currentIndex < slides.length - slidesToShow) currentIndex += 1;
-            if (movedBy > 50 && currentIndex > 0) currentIndex -= 1;
+            // Snap logic: if moved more than a certain threshold or a quick flick
+            const snapThreshold = getStepWidth() * 0.3; // 30% of card width
+            if (movedBy < -snapThreshold && currentIndex < slides.length - slidesToShow) currentIndex += 1;
+            else if (movedBy > snapThreshold && currentIndex > 0) currentIndex -= 1;
             
             slider.style.transition = 'transform 0.5s ease-in-out'; // Re-enable for snap animation
             updateSliderPosition();
@@ -140,7 +139,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
         }
 
-        // Arrow button listeners
+        // Add event listeners for swiping (touch and mouse)
+        slider.addEventListener('dragstart', (e) => e.preventDefault()); // Prevent image dragging issues
+        slider.addEventListener('touchstart', touchStart);
+        slider.addEventListener('touchend', touchEnd);
+        slider.addEventListener('touchmove', touchMove);
+        slider.addEventListener('mousedown', touchStart);
+        slider.addEventListener('mouseup', touchEnd);
+        slider.addEventListener('mouseleave', () => { if(isDragging) touchEnd() });
+        slider.addEventListener('mousemove', touchMove);
+
+        // Arrow button listeners (re-added explicitly)
         nextBtn.addEventListener('click', () => {
             if ((currentIndex + slidesToShow) < slides.length) {
                 currentIndex++;
@@ -153,20 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentIndex--;
                 updateSliderPosition();
             }
-        });
-
-        // Add touch and mouse event listeners for swiping
-        slides.forEach((slide, index) => {
-            slide.addEventListener('dragstart', (e) => e.preventDefault());
-            // Touch events
-            slide.addEventListener('touchstart', touchStart(index));
-            slide.addEventListener('touchend', touchEnd);
-            slide.addEventListener('touchmove', touchMove);
-            // Mouse events (for desktop dragging)
-            slide.addEventListener('mousedown', touchStart(index));
-            slide.addEventListener('mouseup', touchEnd);
-            slide.addEventListener('mouseleave', () => { if(isDragging) touchEnd() });
-            slide.addEventListener('mousemove', touchMove);
         });
 
         // Window resize listener
