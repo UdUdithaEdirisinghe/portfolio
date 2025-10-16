@@ -2,11 +2,11 @@
 /* 1. VARIABLES & RESET               */
 /* ---------------------------------- */
 :root {
-    --primary-color: #0d47a1;
-    --secondary-color: #1976d2;
-    --background-color: #f8f9fa;
-    --surface-color: #ffffff;
-    --text-color: #212529;
+    --primary-color: #0d47a1; /* A deep, professional blue */
+    --secondary-color: #1976d2; /* A slightly lighter blue for accents */
+    --background-color: #f8f9fa; /* A very light gray */
+    --surface-color: #ffffff; /* For cards and sections */
+    --text-color: #212529; /* A dark gray, easier on the eyes than pure black */
     --light-text-color: #6c757d;
     --border-color: #e9ecef;
     --shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
@@ -28,8 +28,6 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     line-height: 1.7;
-    /* Fluid Typography: Scales font size with screen width */
-    font-size: clamp(1rem, 2.5vw, 1.05rem); 
 }
 
 main {
@@ -44,7 +42,7 @@ h1, h2, h3 {
 }
 
 h2 {
-    font-size: clamp(1.8rem, 5vw, 2rem);
+    font-size: 2rem;
     margin-bottom: 25px;
     text-align: center;
 }
@@ -71,12 +69,12 @@ header {
 }
 
 header h1 {
-    font-size: clamp(2.5rem, 8vw, 3rem);
+    font-size: 3rem;
     margin-bottom: 10px;
 }
 
 header p {
-    font-size: clamp(1rem, 4vw, 1.15rem);
+    font-size: 1.15rem;
     color: var(--light-text-color);
     max-width: 600px;
     margin: 0 auto;
@@ -118,47 +116,35 @@ section {
     font-weight: 600;
 }
 
-/* HORIZONTAL SLIDER STYLES */
-.project-slider-container,
-.activity-slider-container {
+/* HORIZONTAL PROJECT SLIDER STYLES */
+.project-slider-container {
     position: relative;
     padding: 0 50px; 
 }
 
-.project-viewport,
-.activity-viewport {
+.project-viewport {
     overflow: hidden;
 }
 
-.project-slider,
-.activity-slider {
+.project-slider {
     display: flex;
     gap: 20px;
     transition: transform 0.5s ease-in-out;
-    /* Performance hint for the browser */
-    will-change: transform; 
+    touch-action: pan-y; /* Prevent vertical scroll during horizontal swipe */
+    -webkit-user-select: none; /* Prevent text selection during swipe */
+    -ms-user-select: none;
+    user-select: none;
 }
 
-.project-card,
-.activity-card {
+.project-card {
     background-color: var(--surface-color);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
-    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
-    will-change: transform, box-shadow;
-}
-
-.project-card {
     flex: 0 0 calc(50% - 10px);
-}
-
-.activity-card {
-    flex: 0 0 calc(100% / 3 - 14px);
-    text-align: left;
+    flex-shrink: 0;
 }
 
 .project-image {
@@ -180,13 +166,50 @@ section {
 .project-links { display: flex; gap: 10px; }
 
 
+/* Styles for the Activities Slider */
+.activity-slider-container {
+    position: relative;
+    padding: 0 50px;
+}
+
+.activity-viewport {
+    overflow: hidden;
+}
+
+.activity-slider {
+    display: flex;
+    gap: 20px;
+    transition: transform 0.5s ease-in-out;
+    touch-action: pan-y; /* Prevent vertical scroll during horizontal swipe */
+    -webkit-user-select: none; /* Prevent text selection during swipe */
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.activity-card {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    text-align: left;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 calc(100% / 3 - 14px);
+    flex-shrink: 0;
+}
+
 .activity-image {
     width: 100%;
     height: 180px;
     object-fit: cover;
     display: block;
     cursor: pointer;
-    transition: opacity 0.3s ease-out;
+    transition: opacity 0.3s ease;
+}
+
+.activity-card a:hover .activity-image {
+    opacity: 0.85;
 }
 
 .activity-text-content {
@@ -230,13 +253,31 @@ section {
     border-radius: 50px;
     text-decoration: none;
     font-weight: 600;
-    transition: background-color 0.3s ease-out, transform 0.2s ease-out;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn.btn-primary:hover {
+    background-color: #0b3a82;
 }
 
 .project-links .btn {
     background-color: var(--surface-color);
     color: var(--primary-color);
     border: 1px solid var(--border-color);
+}
+
+.project-links .btn:hover {
+    background-color: var(--background-color);
+    border-color: var(--secondary-color);
 }
 
 .contact-buttons {
@@ -270,7 +311,12 @@ section {
     color: var(--text-color);
     font-weight: 500;
     font-size: 1rem;
-    transition: color 0.3s ease-out, transform 0.2s ease-out;
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.social-link:hover {
+    color: var(--primary-color);
+    transform: translateY(-2px);
 }
 
 .social-link i {
@@ -293,8 +339,13 @@ section {
     justify-content: center;
     color: var(--primary-color);
     box-shadow: var(--shadow);
-    transition: all 0.3s ease-out;
+    transition: all 0.3s ease;
     z-index: 10;
+}
+
+.slider-btn:hover {
+    background-color: var(--background-color);
+    transform: translateY(-50%) scale(1.1);
 }
 
 .slider-btn:disabled {
@@ -332,26 +383,12 @@ section {
 
     .prev-project-btn, .prev-activity-btn { left: 0; }
     .next-project-btn, .next-activity-btn { right: 0; }
-
-    .slider-btn {
-        width: 44px; /* Larger tap target */
-        height: 44px; /* Larger tap target */
-    }
 }
 
-/* Disable hover effects on touch devices for a cleaner experience */
-@media (hover: none) and (pointer: coarse) {
-    .project-card:hover, .activity-card:hover, .btn:hover, .social-link:hover, .slider-btn:hover {
-        transform: none;
-        box-shadow: var(--shadow);
-        background-color: initial;
-        color: initial;
-    }
-    .btn.btn-primary:hover {
-        background-color: var(--primary-color);
-    }
-    .project-links .btn:hover {
-        background-color: var(--surface-color);
+
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 2.5rem;
     }
 }
 
@@ -387,8 +424,8 @@ section {
 /* 7. ANIMATION STYLES                */
 /* ---------------------------------- */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in {
@@ -396,7 +433,6 @@ section {
   animation-timeline: view();
   animation-range-start: entry 10%;
   animation-range-end: entry 40%;
-  will-change: opacity, transform;
 }
 
 /* ---------------------------------- */
@@ -419,5 +455,68 @@ footer p {
 /* ---------------------------------- */
 /* 9. MODAL GALLERY STYLES            */
 /* ---------------------------------- */
-/* (Modal styles remain unchanged) */
-.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000;opacity:0;transition:opacity .3s ease}.modal-overlay.visible{display:flex;opacity:1}.modal-content{position:relative;max-width:90%;max-height:85%}#modal-image{width:100%;height:100%;max-height:80vh;object-fit:contain;border-radius:4px}.modal-close,.modal-prev,.modal-next{position:absolute;color:#fff;font-size:3rem;font-weight:700;cursor:pointer;-webkit-user-select:none;user-select:none;transition:color .2s ease}.modal-close:hover,.modal-prev:hover,.modal-next:hover{color:#bbb}.modal-close{top:15px;right:35px}.modal-prev,.modal-next{top:50%;transform:translateY(-50%)}.modal-prev{left:20px}.modal-next{right:20px}
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.visible {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 85%;
+}
+
+#modal-image {
+    width: 100%;
+    height: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.modal-close, .modal-prev, .modal-next {
+    position: absolute;
+    color: white;
+    font-size: 3rem;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s ease;
+}
+
+.modal-close:hover, .modal-prev:hover, .modal-next:hover {
+    color: #bbb;
+}
+
+.modal-close {
+    top: 15px;
+    right: 35px;
+}
+
+.modal-prev, .modal-next {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.modal-prev {
+    left: 20px;
+}
+
+.modal-next {
+    right: 20px;
+}
