@@ -318,6 +318,15 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
 .modal-prev { left: 20px; }
 .modal-next { right: 20px; }
 
+#modal-caption {
+  color: white;
+  text-align: center;
+  padding-bottom: 10px;
+  font-size: 1rem;
+  font-weight: 400;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
 /* ---------------------------------- */
 /* 10. RESPONSIVE MEDIA QUERIES       */
 /* ---------------------------------- */
@@ -369,4 +378,26 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
   .swipe-indicator { display: none; }
 
   .expandable { --clamp-lines: 3; }
+}
+
+/* ---------------------------------- */
+/* 12. VOLUNTEERING CARD LINKS        */
+/* ---------------------------------- */
+.activity-links {
+  margin-top: auto; /* Pushes the button to the bottom */
+  padding-top: 15px; /* Adds space between the description and button */
+  display: flex;
+  gap: 10px;
+}
+
+.activity-links .btn {
+  background: var(--surface-color);
+  color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  width: 100%; /* Makes button full-width of the card padding */
+}
+
+.activity-links .btn:hover {
+  background: var(--background-color);
+  border-color: var(--secondary-color);
 }

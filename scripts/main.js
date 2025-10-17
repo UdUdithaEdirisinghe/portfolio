@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('image-modal');
   if (modal) {
     const modalImage = document.getElementById('modal-image');
+    const modalCaption = document.getElementById('modal-caption'); // Caption div
     const closeModal = document.querySelector('.modal-close');
     const prevButton = document.querySelector('.modal-prev');
     const nextButton = document.querySelector('.modal-next');
@@ -89,6 +90,13 @@ document.addEventListener('DOMContentLoaded', () => {
         modalImage.src = galleryItems[currentIndex].getAttribute('href');
         prevButton.style.display = (currentIndex === 0) ? 'none' : 'block';
         nextButton.style.display = (currentIndex === galleryItems.length - 1) ? 'none' : 'block';
+        
+        // Logic for the image counter
+        if (galleryItems.length > 1) {
+          modalCaption.textContent = `Image ${currentIndex + 1} of ${galleryItems.length}`;
+        } else {
+          modalCaption.textContent = '';
+        }
       }
     }
 
