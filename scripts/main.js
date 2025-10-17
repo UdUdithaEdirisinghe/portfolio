@@ -162,11 +162,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createIndicators() {
       indicatorsContainer.innerHTML = '';
-      // On mobile (slidesToShow = 1), we show one dot per slide.
-      // On desktop, it's (total slides - slides visible + 1) dots.
       const numIndicators = (slidesToShow === 1) ? slides.length : slides.length - slidesToShow + 1;
       
-      if (numIndicators <= 1) return; // Don't show indicators if only one possible position
+      if (numIndicators <= 1) return;
 
       for (let i = 0; i < numIndicators; i++) {
         const dot = document.createElement('div');
@@ -190,16 +188,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function stepWidth() {
-      // On mobile (slidesToShow=1), step width is the viewport width (no gap taken into account)
       if (slidesToShow === 1) return viewport.clientWidth; 
-      // Otherwise use card width + gap
       const cardWidth = slides[0].offsetWidth;
       return cardWidth + getGap();
     }
 
     function clampIndex(i) {
-      // On mobile (slidesToShow = 1), max index is slides.length - 1
-      // On desktop, it's slides.length - slidesToShow
       const max = (slidesToShow === 1) ? slides.length - 1 : slides.length - slidesToShow;
       return Math.min(Math.max(i, 0), max);
     }
@@ -211,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
       slider.style.transform = `translateX(${currentTranslate}px)`;
       updateIndicators();
       prevBtn.disabled = currentIndex === 0;
-      nextBtn.disabled = currentIndex === clampIndex(Infinity); // Check against the max possible index
+      nextBtn.disabled = currentIndex === clampIndex(Infinity);
     }
 
     function raf() {
@@ -230,9 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const p = getPoint(e);
       isPointerDown = true; isDragging = false; hasMoved = false;
       startX = p.x; startY = p.y;
-      // Capture current translate before drag starts
       prevTranslate = currentTranslate; 
-      // Stop any ongoing animation immediately
       slider.style.transition = 'none'; 
       if (animationID) cancelAnimationFrame(animationID);
     }
@@ -260,20 +252,18 @@ document.addEventListener('DOMContentLoaded', () => {
       animationID = 0;
       
       const movedBy = currentTranslate - prevTranslate;
-      const sensitivity = 50; // Pixels threshold to trigger slide change
+      const sensitivity = 50; 
       
-      // Determine direction and change index if threshold is met
       if (movedBy < -sensitivity) {
         currentIndex = clampIndex(currentIndex + 1);
       } else if (movedBy > sensitivity) {
         currentIndex = clampIndex(currentIndex - 1);
-      } // Else: snap back to current index if move wasn't significant
+      } 
       
       slider.style.transition = 'transform 0.25s ease-out';
       snapToIndex();
       
       isPointerDown = false; isDragging = false;
-      // Use setTimeout to remove dragging class after potential click event bubbles up
       setTimeout(() => sliderContainer.classList.remove('dragging'), 0);
     }
 

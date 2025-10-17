@@ -74,13 +74,10 @@ body {
   line-height: 1;
   transition: color 0.3s;
 }
-/* -- Theme Icon Visibility -- */
-#theme-toggle .icon-moon { display: inline-block; } /* Show moon by default (light mode) */
-#theme-toggle .icon-sun { display: none; }         /* Hide sun by default (light mode) */
-
-body.theme-dark #theme-toggle .icon-moon { display: none; }         /* Hide moon in dark mode */
-body.theme-dark #theme-toggle .icon-sun { display: inline-block; } /* Show sun in dark mode */
-
+#theme-toggle .icon-moon { display: inline-block; }
+#theme-toggle .icon-sun { display: none; }
+body.theme-dark #theme-toggle .icon-moon { display: none; }
+body.theme-dark #theme-toggle .icon-sun { display: inline-block; }
 
 /* ---------------------------------- */
 /* 3. LAYOUT & TYPOGRAPHY             */
