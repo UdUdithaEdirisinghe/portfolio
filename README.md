@@ -16,7 +16,6 @@ This is a fully responsive website built using **vanilla HTML, CSS, and JavaScri
 
 * A persistent Dark/Light mode theme switcher.
 * Custom-built, touch-enabled sliders for projects and volunteering.
-* A dynamic "lightbox" image gallery.
 * Modern, scroll-based fade-in animations.
 
 ## Tech Stack
