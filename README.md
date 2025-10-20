@@ -7,7 +7,7 @@
 This repository contains the source code for my personal portfolio website, built from scratch to showcase my projects, experience, and skills.
 
 <p align="center">
-  <strong>➡️ Live Demo: <a href="https://uditha-edirisinghe.vercel.app/">https://uditha-edirisinghe.vercel.app/</a></strong>
+  <strong>➡️ Live Demo: <a href="https://uditha.vercel.app/">https://uditha.vercel.app/</a></strong>
 </p>
 
 ## About This Project
