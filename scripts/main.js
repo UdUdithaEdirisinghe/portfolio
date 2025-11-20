@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const w = window.innerWidth;
       if (w <= slidesToShowConfig.mobile.breakpoint)      slidesToShow = slidesToShowConfig.mobile.slides;
       else if (w <= slidesToShowConfig.tablet.breakpoint) slidesToShow = slidesToShowConfig.tablet.slides;
-      else                                                  slidesToShow = slidesToShowConfig.desktop.slides;
+      else                                                slidesToShow = slidesToShowConfig.desktop.slides;
     }
 
     function stepWidth() {
