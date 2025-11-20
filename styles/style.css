@@ -378,15 +378,6 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
   .swipe-indicator { display: none; }
 
   .expandable { --clamp-lines: 3; }
-  
-  /* Project Link Stacking for Mobile */
-  .project-links {
-    flex-direction: column;
-    gap: 10px;
-  }
-  .project-links .btn {
-    width: 100%;
-  }
 }
 
 /* ---------------------------------- */
