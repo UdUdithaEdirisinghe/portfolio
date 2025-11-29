@@ -144,6 +144,33 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, 150);
   });
+    document.querySelectorAll('#volunteering .expandable').forEach(p => {
+      setTimeout(() => {
+        if (p.scrollHeight > p.clientHeight) {
+          const toggle = document.createElement('a');
+          toggle.href = '#';
+          toggle.className = 'read-more-toggle';
+          p.appendChild(toggle);
+  
+          const updateToggleText = () => {
+            const isExpanded = p.classList.contains('expanded');
+            if (isExpanded) {
+              toggle.innerHTML = `<span class="toggle-text">&nbsp;Show less</span>`;
+            } else {
+              toggle.innerHTML = `<span class="ellipsis">&hellip;&nbsp;</span><span class="toggle-text">Read more</span>`;
+            }
+          };
+  
+          toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            p.classList.toggle('expanded');
+            updateToggleText();
+          });
+  
+          updateToggleText();
+        }
+      }, 150);
+    });
 
   /* ---------------- SLIDER ---------------- */
   function setupSlider(containerSelector, sliderSelector, prevBtnSelector, nextBtnSelector, indicatorSelector, slidesToShowConfig) {
