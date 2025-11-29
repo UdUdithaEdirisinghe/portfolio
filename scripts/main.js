@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('image-modal');
   if (modal) {
     const modalImage = document.getElementById('modal-image');
-    const modalCaption = document.getElementById('modal-caption'); // Caption div
+    const modalCaption = document.getElementById('modal-caption');
     const closeModal = document.querySelector('.modal-close');
     const prevButton = document.querySelector('.modal-prev');
     const nextButton = document.querySelector('.modal-next');
@@ -91,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
         prevButton.style.display = (currentIndex === 0) ? 'none' : 'block';
         nextButton.style.display = (currentIndex === galleryItems.length - 1) ? 'none' : 'block';
         
-        // Logic for the image counter
         if (galleryItems.length > 1) {
           modalCaption.textContent = `Image ${currentIndex + 1} of ${galleryItems.length}`;
         } else {
@@ -116,9 +115,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ---------------- EXPAND / COLLAPSE (Read more - Projects) ---------------- */
-  document.querySelectorAll('#projects .expandable').forEach(p => {
+  /* ---------------- EXPAND / COLLAPSE (Universal) ---------------- */
+  // Applies to both Projects and Volunteering sections
+  document.querySelectorAll('.expandable').forEach(p => {
+    // Wait for layout to stabilize (images loading etc.)
     setTimeout(() => {
+      // Check if content overflows height
       if (p.scrollHeight > p.clientHeight) {
         const toggle = document.createElement('a');
         toggle.href = '#';
@@ -144,33 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, 150);
   });
-    document.querySelectorAll('#volunteering .expandable').forEach(p => {
-      setTimeout(() => {
-        if (p.scrollHeight > p.clientHeight) {
-          const toggle = document.createElement('a');
-          toggle.href = '#';
-          toggle.className = 'read-more-toggle';
-          p.appendChild(toggle);
-  
-          const updateToggleText = () => {
-            const isExpanded = p.classList.contains('expanded');
-            if (isExpanded) {
-              toggle.innerHTML = `<span class="toggle-text">&nbsp;Show less</span>`;
-            } else {
-              toggle.innerHTML = `<span class="ellipsis">&hellip;&nbsp;</span><span class="toggle-text">Read more</span>`;
-            }
-          };
-  
-          toggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            p.classList.toggle('expanded');
-            updateToggleText();
-          });
-  
-          updateToggleText();
-        }
-      }, 150);
-    });
 
   /* ---------------- SLIDER ---------------- */
   function setupSlider(containerSelector, sliderSelector, prevBtnSelector, nextBtnSelector, indicatorSelector, slidesToShowConfig) {

@@ -177,7 +177,7 @@ body.theme-dark .skill-tag:hover {
 .activity-card h3 { margin: 0 0 5px; }
 .activity-card .org { color: var(--text-color); font-weight: 600; margin-bottom: 2px; font-size: 0.95rem; }
 .activity-card .role { font-style: italic; margin-bottom: 12px; font-size: 0.9rem; }
-.activity-card .desc { font-size: 0.9rem; line-height: 1.6; }
+.activity-card .desc { font-size: 0.9rem; line-height: 1.7; }
 
 .slider-btn {
   position: absolute;
@@ -225,7 +225,8 @@ body.theme-dark .skill-tag:hover {
   position: relative;
   overflow: hidden;
   --clamp-lines: 4;
-  max-height: calc(1.7 * .95rem * var(--clamp-lines));
+  line-height: 1.7; /* Ensures calculation matches line height */
+  max-height: calc(1.7em * var(--clamp-lines)); /* Uses em for safer scaling */
 }
 .expandable.expanded { max-height: 50em; }
 .read-more-toggle {
@@ -383,8 +384,8 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
 /* 12. VOLUNTEERING CARD LINKS        */
 /* ---------------------------------- */
 .activity-links {
-  margin-top: auto; /* Pushes the button to the bottom */
-  padding-top: 15px; /* Adds space between the description and button */
+  margin-top: auto; 
+  padding-top: 15px; 
   display: flex;
   gap: 10px;
 }
@@ -393,7 +394,7 @@ footer p { margin: 0; font-size: 0.9rem; color: var(--light-text-color); }
   background: var(--surface-color);
   color: var(--primary-color);
   border: 1px solid var(--border-color);
-  width: 100%; /* Makes button full-width of the card padding */
+  width: 100%;
 }
 
 .activity-links .btn:hover {
